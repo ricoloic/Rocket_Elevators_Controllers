@@ -1,0 +1,115 @@
+***************************************
+-------------RESIDENTIAL---------------
+***************************************
+
+SEQUENCE elevator_send USING user_request and elevators
+
+    FOR EACH elevator IN elevators
+        FOR other OF elevators
+            IF stop_list of elevator LENGTH IS SMALER THAN stop_list of other LENGTH THEN 
+                CALL add_stop WITH user_request and elevator
+            
+            ELSE IF stop_list of elevator LENGTH IS EQUAL TO stop_list of other LENGTH THEN
+                CALL add_stop WITH user_request and elevator
+
+            ELSE IF status IS IDLE THEN 
+                CALL add_stop WITH user_request and elevator
+
+            ENDIF
+        ENDFOR
+    ENDFOR
+
+ENDSEQUENCE
+
+SEQUENCE btn_down_active USING
+
+
+SEQUENCE add_stop USING elevator and user_request
+
+    IF user_direction IS EQUAL TO elevator_direction AND user_floor IS GREATER OR EQUAL TO elevator_floor THEN
+        ADD user_floor TO stop_list
+    
+    ELSE IF elevator_direction IS STOP THEN
+        ADD user_floor TO stop_list
+
+    ELSE IF user_direction IS NOT EQUAL TO elevator_direction THEN
+        ADD user_floor TO buffer_list
+
+    ENDIF
+
+ENDSEQUENCE
+
+SEQUENCE run USING elevator
+
+    IF stop_list IS NOT EMPTY THEN
+        IF stop_list.next_stop IS SMALER THAN elevator_floor THEN
+            SET elevator_direction TO DOWN
+            SET status TO MOVING
+
+        ELSE IF stop_list.next_stop IS GREATER THAN elevator_floor THEN
+            SET elevator_direction TO UP
+            SET status TO MOVING
+
+        ELSE IF stop_list.next_stop EQUAL elevator_floor THEN
+            REMOVE this_stop FROM stop_list
+            
+            PRINT "Reached floor" + elevator_floor
+
+        ENDIF
+
+    ELSE IF stop_list IS EMPTY THEN
+        IF buffer_list IS NOT EMPTY THEN
+            ADD buffer_list TO stop_list
+        
+        ELSE IF buffer_list IS EMPTY THEN
+            SET status TO IDLE
+            SET elevator_direction TO STOP
+
+        ENDIF
+    ENDIF
+
+ENDSEQUENCE
+
+SET nbFloor TO 10
+INIT elevators
+INIT columns {
+    SET elev_per_column TO 2
+    FOR elevators = 1 TO elev_per_column
+        ADD elevator {
+            SET floor_btn TO list OF nbFloor
+            init stop_list
+            init buffer_list
+            init elevator_direction
+            init elevator_floor
+            SET elevator_door TO close
+            init AND SET status TO IDLE
+        } TO elevators
+    ENDFOR
+}
+
+INIT user_requests
+INIT floors {
+    FOR user_requests = 1 TO nbFloor
+        ADD user_request {
+            INIT btn {
+                IF user_requests IS EQUAL TO 1 THEN
+                    SET btn_up
+
+                ELSE IF user_requests IS EQUAl TO nbFloor THEN
+            }
+            init user_direction
+            GET user_floor
+            SET user_door TO closed
+        } TO user_requests
+    ENDFOR
+}
+
+FOR EACH elevator in elevators
+    CALL run WITH elevator
+ENDFOR
+
+WHILE always
+    FOR EACH btn IN user_request
+        IF btn_down IS pressed THEN
+            SET user_direction TO DOWN
+            CALL elevator_send WITH user_request
