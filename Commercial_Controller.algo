@@ -1,4 +1,51 @@
 ***************************************
 -------------COMMERCIAL----------------
 ***************************************
+SET total_floor TO 60
+SET total_basement TO 6
+SET number_columns TO 4
+SET num_elev_per_columns TO 3
+
+DEFINE Battery
+
+    column_list: SET TO EMPTY list
+    SEQUENCE create_culumn_list USING number_columns
+        
+        SET status TO AVCTIVE
+        init max_range
+        init min_range
+
+        SET floor_per_column TO (total_floor / number_columns - 1)
+
+        FOR EACH column IN the building
+            IF column IS EQUAL TO 0 THEN
+                SET max_range OF column TO -1
+                SET min_range OF column TO NEGATIVE VALUE OF total_basement
+            
+            ELSE 
+                SET max_range OF column TO column * floor_per_column
+                SET min_range OF column TO max_range OF column - (max_range - 1)
+            
+            ENDIF
+        ENDFOR
+
+        elevator_list: SET TO EMPTY list
+        SEQUENCE create_elevator_list USING num_elev_per_columns
+            INIT elevator {
+                init points
+                init stop_list
+                init UP_buffer_list
+                init DOWN_buffer_list
+                init elevator_direction
+                SET elevator_floor TO 1
+                SET elevator_door TO CLOSE
+                SET status TO IDLE
+            }
+        ENDSEQUENCE
+
+    ENDSEQUENCE
+
+ENDDEFINE
+
+
 
