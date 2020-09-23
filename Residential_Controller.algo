@@ -35,7 +35,7 @@ DEFINE Columns
                     SET btn TO floor
                 ENDFOR
             }
-            init rank
+            init points
             init stop_list
             init UP_buffer_list
             init DOWN_buffer_list
@@ -46,37 +46,101 @@ DEFINE Columns
         }
     ENDSEQUENCE
 ENDDEFINE
--------------------------------------------------------------------------------------------------------------------------------
 
--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------main event-------------------------------------------------------------
+WHEN user PRESS btn_up
+    SET user_direction TO UP
+    SET btn_up TO ACTIVE light
+    CALL request_check WITH user_request
+
+WHEN user PRESS btn_down
+    SET user_direction TO DOWN
+    SET btn_down TO ACTIVE light
+    CALL request_check WITH user_request
+
+WHEN floor_btn IS PRESS 
+    CALL elevator_btn WITH elevator
+    
+
+WHILE stop_list IS NOT EMPTY
+    FOR all elevator IN elevators
+        CALL run WITH elevator
+    ENDFOR
+ENDWHILE
+--------------------------------------------------------main event-------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------------------------------elevator choice based on points
 SEQUENCE elevator_send USING user_request
 
-    FOR EACH elevator in columns
-        SET rank TO 0
-
-        IF elevator_floor IS EQUAL TO user_floor THEN
-            INCREMENT rank BY 5
-
-        ELSE IF user_direction IS EQUAL TO elevator_direction AND elevator_floor IS < THAN user_floor THEN "up"
-            INCREMENT rank BY 3
-
-        ELSE IF user_direction IS EQUAL TO elevator_direction AND elevator_floor IS > THAN user_floor THEN "down"
-            INCREMENT rank BY 3
-        
-        ELSE IF elevator_floor IS NEAR OF all elevator_floor TO user_floor AND status IS IDLE THEN
-            INCREMENT rank BY 2
-        
-        ELSE IF LENGTH OF stop_list IS THE SMALEST OF all stop_list THEN
-            INCREMENT rank BY 1
-
-        ENDIF
-    ENDFOR
-
-    SORT IN DECREASING ORDER OF rank WITH elevators_list
+    SORT IN INCREASING ORDER OF points WITH elevators_list
 
     SET best_elevator TO the FIRST INDEX OF elevators_list
 
-    CALL add_stop WITH best_elevator
+    CALL add_stop WITH best_elevator and user_request
+
+ENDSEQUENCE
+-------------------------------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------------------------------pointing system
+SEQUENCE pointing USING user_request and elevator
+
+    SET valut TO POSITIVE NUMBER OF DIFFERANCE BETWEEN elevator_floor and user_floor
+
+    CASE (value) OF
+        FOR EACH floor IN the building
+            IF floor IS EQUAL TO value
+                INCREMENT points IN elevator WITH value + 1
+            ENDIF
+        ENDFOR
+    ENDCASE
+
+ENDSEQUENCE
+
+SEQUENCE request_check USING user_request
+
+    FOR EACH elevator IN columns
+        IF elevator_door IS OPEN THEN
+            WAIT FOR elevator_door TO CLOSE THEN
+                CALL points_update WITH user_request and elevator
+        
+        ELSE IF elevator_door IS CLOSE THEN
+            CALL points_update WITH user_request and elevator
+        
+        ENDIF
+    ENDFOR
+
+    CALL elevator_send WITH user_request
+
+ENDSEQUENCE
+
+SEQUENCE points_update USING user_request and elevator      
+        
+    SET points TO 0
+
+    IF user_direction IS EQUAl TO elevator_direction AND user_floor IS > OR EQUAl TO elevator_floor THEN
+        SET points TO 0
+        CALL pointing WITH user_request and elevator
+
+    ELSE IF user_direction IS EQUAl TO elevator_direction AND user_floor IS < OR EQUAl TO elevator_floor THEN
+        SET points TO 0
+        CALL pointing WITH user_request and elevator
+
+    ELSE IF user_direction IS NOT EQUAL TO elevator_direction AND status IS NOT IDLE THEN
+        SET points TO floor_amount + 1
+
+    ENDIF
+
+    IF status IS IDLE THEN
+        CALL pointing WITH user_request and elevator
+    ENDIF
+
+    CASE (stop_list LENGTH) OF
+        FOR EACH floor IN the building
+            IF LENGTH OF stop_list IS EQUAl TO floor THEN
+                INCREMENT points WITH floor
+            ENDIF
+        ENDFOR
+    ENDCASE
 
 ENDSEQUENCE
 -------------------------------------------------------------------------------------------------------------------------------
@@ -103,7 +167,7 @@ ENDSEQUENCE
 -------------------------------------------------------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------------------------------------------------------
-SEQUENCE elevator_btn USING elevator
+SEQUENCE elevator_btn USING elevator and btn_floor
 
     ADD btn_floor TO stop_list
     SET btn_floor TO ACTIVE light
@@ -115,10 +179,10 @@ ENDSEQUENCE
 SEQUENCE list_arrange USING elevator
 
     IF elevator_direction IS UP THEN
-        SORT IN increasing ORDER WITH stop_list
+        SORT IN INCREASING ORDER WITH stop_list
     
     ELSE IF elevator_direction IS DOWN THEN
-        SORT IN decreasing ORDER stop_list
+        SORT IN DECREASING ORDER WITH stop_list
         
     ENDIF
 
@@ -193,23 +257,36 @@ SEQUENCE run USING elevator
 ENDSEQUENCE
 -------------------------------------------------------------------------------------------------------------------------------
 
---------------------------------------------------------main event-------------------------------------------------------------
-WHEN user PRESS btn_up
-    SET user_direction TO UP
-    SET btn_up FOR user_floor TO ACTIVE light
-    CALL elevator_send WITH user_request
 
-WHEN user PRESS btn_down
-    SET user_direction TO DOWN
-    SET btn_down FOR user_floor TO ACTIVE light
-    CALL elevator_send WITH user_request
 
-WHEN floor_btn IS PRESS 
-    CALL elevator_btn WITH elevator and btn_floor 
-    
 
-WHILE stop_list IS NOT EMPTY
-    FOR all elevator IN elevators
-        CALL run WITH elevator
-    ENDFOR
-ENDWHILE
+
+
+
+
+
+
+
+
+
+
+    "FOR EACH elevator in columns
+        SET rank TO 0
+
+        IF elevator_floor IS EQUAL TO user_floor THEN
+            INCREMENT rank BY 5
+
+        ELSE IF user_direction IS EQUAL TO elevator_direction AND elevator_floor IS < THAN user_floor THEN "up"
+            INCREMENT rank BY 3
+
+        ELSE IF user_direction IS EQUAL TO elevator_direction AND elevator_floor IS > THAN user_floor THEN "down"
+            INCREMENT rank BY 3
+
+        ELSE IF elevator_floor IS "NEAR" user_floor AND status IS IDLE THEN
+            INCREMENT rank BY 2
+        
+        ELSE IF LENGTH OF stop_list IS THE SMALEST OF all stop_list THEN
+            INCREMENT rank BY 1
+
+        ENDIF
+    ENDFOR"
