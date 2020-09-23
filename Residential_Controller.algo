@@ -24,6 +24,17 @@ DEFINE Floors
             SET user_door TO CLOSE
         }
     ENDSEQUENCE
+
+    WHEN user PRESS btn_up
+        SET user_direction TO UP
+        SET btn_up TO ACTIVE light
+        CALL request_check WITH user_request
+
+    WHEN user PRESS btn_down
+        SET user_direction TO DOWN
+        SET btn_down TO ACTIVE light
+        CALL request_check WITH user_request
+
 ENDDEFINE
 
 DEFINE Columns
@@ -45,41 +56,17 @@ DEFINE Columns
             SET status TO IDLE
         }
     ENDSEQUENCE
-ENDDEFINE
 
--------------------------------------------------------------------------------------------------------------------------------main event
-WHEN user PRESS btn_up
-    SET user_direction TO UP
-    SET btn_up TO ACTIVE light
-    CALL request_check WITH user_request
+    WHEN floor_btn IS PRESS
+        CALL elevator_btn WITH elevator and floor_btn
 
-WHEN user PRESS btn_down
-    SET user_direction TO DOWN
-    SET btn_down TO ACTIVE light
-    CALL request_check WITH user_request
-
-WHEN floor_btn IS PRESS
-    CALL elevator_btn WITH elevator and floor_btn
-    
+ENDDEFINE  
 
 WHILE stop_list OF all elevator IS NOT EMPTY
     FOR all elevator IN columns
         CALL run WITH elevator
     ENDFOR
 ENDWHILE
--------------------------------------------------------------------------------------------------------------------------------main event
-
--------------------------------------------------------------------------------------------------------------------------------elevator choice based on points
-SEQUENCE elevator_send USING user_request
-
-    SORT IN INCREASING ORDER OF points WITH elevator_list
-
-    SET best_elevator TO the FIRST INDEX OF elevator_list
-
-    CALL add_stop WITH best_elevator and user_request
-
-ENDSEQUENCE
--------------------------------------------------------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------------------------------------------------------pointing system
 SEQUENCE pointing USING user_request and elevator
@@ -135,25 +122,16 @@ SEQUENCE points_update USING user_request and elevator
     ENDIF
 
 ENDSEQUENCE
--------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------/pointing related
 
--------------------------------------------------------------------------------------------------------------------------------
-SEQUENCE stop_switch USING elevator
+-------------------------------------------------------------------------------------------------------------------------------elevator choice based on points
+SEQUENCE elevator_send USING user_request
 
-    IF LENGTH OF DOWN_buffer_list IS < THAN LENGTH OF UP_buffer_list THEN
-        ADD UP_buffer_list TO stop_list
+    SORT IN INCREASING ORDER OF points WITH elevator_list
 
-    ELSE IF LENGTH OF DOWN_buffer_list IS > THAN LENGTH OF UP_buffer_list THEN
-        ADD DOWN_buffer_list TO stop_list
+    SET best_elevator TO the FIRST INDEX OF elevator_list
 
-    ELSE IF LENGTH OF DOWN_buffer_list IS EQUAL TO LENGTH OF UP_buffer_list THEN
-        ADD random buffer_list TO stop_list
-
-    ELSE IF UP_buffer_list IS EMPTY AND DOWN_buffer_list IS EMPTY THEN
-        SET status TO IDLE
-        SET elevator_direction TO STOP
-
-    ENDIF
+    CALL add_stop WITH best_elevator and user_request
 
 ENDSEQUENCE
 -------------------------------------------------------------------------------------------------------------------------------
@@ -163,21 +141,7 @@ SEQUENCE elevator_btn USING elevator and floor_btn
 
     ADD floor_btn TO stop_list
     SET floor_btn TO ACTIVE light
-    CALL list_arrange
-
-ENDSEQUENCE
--------------------------------------------------------------------------------------------------------------------------------
-
--------------------------------------------------------------------------------------------------------------------------------
-SEQUENCE list_arrange USING elevator
-
-    IF elevator_direction IS UP THEN
-        SORT IN INCREASING ORDER WITH stop_list
-    
-    ELSE IF elevator_direction IS DOWN THEN
-        SORT IN DECREASING ORDER WITH stop_list
-        
-    ENDIF
+    CALL list_sort
 
 ENDSEQUENCE
 -------------------------------------------------------------------------------------------------------------------------------
@@ -191,6 +155,20 @@ SEQUENCE door_state USING elevator and user_request
     ENDFOR
 
     SET elevator_door AND user_door TO CLOSE
+
+ENDSEQUENCE
+-------------------------------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------------------------------all stop related function
+SEQUENCE list_sort USING elevator
+
+    IF elevator_direction IS UP THEN
+        SORT IN INCREASING ORDER WITH stop_list
+    
+    ELSE IF elevator_direction IS DOWN THEN
+        SORT IN DECREASING ORDER WITH stop_list
+        
+    ENDIF
 
 ENDSEQUENCE
 -------------------------------------------------------------------------------------------------------------------------------
@@ -215,12 +193,33 @@ SEQUENCE add_stop USING elevator and user_request
 
     ENDIF
 
-    CALL list_arrange WITH elevator
+    CALL list_sort WITH elevator
 
 ENDSEQUENCE
 -------------------------------------------------------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------------------------------------------------------
+SEQUENCE stop_switch USING elevator
+
+    IF LENGTH OF DOWN_buffer_list IS < THAN LENGTH OF UP_buffer_list THEN
+        ADD UP_buffer_list TO stop_list
+
+    ELSE IF LENGTH OF DOWN_buffer_list IS > THAN LENGTH OF UP_buffer_list THEN
+        ADD DOWN_buffer_list TO stop_list
+
+    ELSE IF LENGTH OF DOWN_buffer_list IS EQUAL TO LENGTH OF UP_buffer_list THEN
+        ADD random buffer_list TO stop_list
+
+    ELSE IF UP_buffer_list IS EMPTY AND DOWN_buffer_list IS EMPTY THEN
+        SET status TO IDLE
+        SET elevator_direction TO STOP
+
+    ENDIF
+
+ENDSEQUENCE
+-------------------------------------------------------------------------------------------------------------------------------/all stop related function
+
+-------------------------------------------------------------------------------------------------------------------------------main function
 SEQUENCE run USING elevator 
 
     IF stop_list IS NOT EMPTY AND elevator_door IS CLOSE THEN
@@ -248,4 +247,4 @@ SEQUENCE run USING elevator
     ENDIF
 
 ENDSEQUENCE
--------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------/main function
