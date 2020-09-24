@@ -179,7 +179,7 @@ SEQUENCE add_stop USING elevator and user_request
     IF user_direction IS EQUAL TO elevator_direction AND user_floor IS GREATER OR EQUAL TO elevator_floor THEN
         ADD user_floor TO stop_list
 
-    ELSE IF user_direction IS EQUAl TO elevator_direction AND user_floor IS SMALER OR EQUAl TO elevator_door THEN
+    ELSE IF user_direction IS EQUAl TO elevator_direction AND user_floor IS SMALER OR EQUAl TO elevator_foor THEN
         ADD user_floor TO stop_list
     
     ELSE IF status IS IDLE THEN
