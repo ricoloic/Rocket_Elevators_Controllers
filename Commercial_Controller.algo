@@ -131,7 +131,10 @@ ENDSEQUENCE
 
 SEQUENCE points_update USING user_request and elevator
 
-    SET differance_last_stop TO POSITIVE NUMBER OF THE DIFFERANCE BETWEEN LAST INDEX OF stop_list and user_position
+    IF status IS NOT IDLE THEN 
+        SET differance_last_stop TO POSITIVE NUMBER OF THE DIFFERANCE BETWEEN LAST INDEX OF stop_list and user_position
+    ENDIF
+
     SET differance_floor TO POSITIVE NUMBER OF THE DIFFERANCE BETWEEN elevator_floor and user_position
     SET max_differance_floor TO max_range 
     SET points TO 0
@@ -145,13 +148,10 @@ SEQUENCE points_update USING user_request and elevator
 
     ELSE IF elevator_direction IS EQUAL TO user_direction AND status IS NOT IDLE THEN
         SET points TO max_range MULTIPLY BY 2
-        INCREMENT points WITH LENGTH OF 
+        INCREMENT points WITH LENGTH OF stop_list
+        INCREMENT points WITH differance_last_stop
 
-
-
-
-
-    
+    ENDIF
 
 ENDSEQUENCE
 -------------------------------------------------------------------------------------------------------------------------------/pointing system
