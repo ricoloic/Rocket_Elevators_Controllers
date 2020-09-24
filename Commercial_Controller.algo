@@ -5,6 +5,60 @@ SET total_floor TO 60
 SET total_basement TO 6
 SET number_columns TO 4
 SET num_elev_per_columns TO 3
+SET total_stories TO total_floor ADDING total_basement
+
+DEFINE Floors
+
+    user_list: SET TO EMPTY list
+    SEQUENCE create_user_list USING total_stories
+
+        FOR story IN the building
+            INIT user_request {
+                IF story IS EQUAL TO total_basement PLUS 1
+                    INIT panel {
+                        FOR EACH floor IN the building
+                            IF floor IS EQUAL TO fist index THEN
+                                SET btn_floor TO Ground_Floor AND DISABLED
+
+                            ELSE
+                                SET btn_floor TO floor VALUE
+                                SET user_direction TO UP
+                                SET user_stop TO floor PLUS total_basement
+                            ENDIF
+                        ENDFOR
+
+                        FOR EACH basement IN the building
+                            SET btn_basement TO basement VALUE PLUS "B"
+                            SET user_direction TO DOWN
+                            SET user_stop TO basement
+                        ENDFOR
+                    }
+                    SET user_position TO story
+
+                ELSE IF story IS GREATER THAN total_basement PLUS 1 THEN
+                    SET btn_ground_floor TO "GF"
+                    SET user_direction TO DOWN
+                    SET user_stop TO total_basement PLUS 1
+                    SET user_position TO story
+
+                ELSE IF story IS SMALLER OR EQUAL TO total_basement THEN
+                    SET btn_ground_floor TO "GF"
+                    SET user_direction TO UP
+                    SET user_stop TO total_basement PLUS 1
+                    SET user_position TO story
+
+                ENDIF
+            }
+        ENDFOR
+    ENDSEQUENCE
+
+    WHEN btn_floor is PRESS
+        CALL 
+
+    WHEN user PRESS btn_ground_floor
+        CALL call_ground WITH user_request
+            
+ENDDEFINE
 
 DEFINE Battery
 
@@ -15,17 +69,18 @@ DEFINE Battery
         init max_range
         init min_range
 
-        SET floor_per_column TO (total_floor / number_columns - 1)
+        SET floor_per_column TO total_floor DIVIDED BY (SUBSTRACT 1 FROM number_columns)
 
+        'start counting from 0
         FOR EACH column IN the building
-            IF column IS EQUAL TO 0 THEN
-                SET max_range OF column TO -1
-                SET min_range OF column TO NEGATIVE VALUE OF total_basement
-            
-            ELSE 
-                SET max_range OF column TO column * floor_per_column
-                SET min_range OF column TO max_range OF column - (max_range - 1)
-            
+            IF column IS EQUAL TO first index THEN
+                SET max_range OF column TO total_basement
+                SET min_range OF column TO 1
+
+            ELSE
+                SET max_range OF column TO column MULTIPLY BY floor_per_column
+                SET min_range OF column TO max_range OF PREVIOUS index OF column PLUS 1
+
             ENDIF
         ENDFOR
 
@@ -42,7 +97,163 @@ DEFINE Battery
                 SET status TO IDLE
             }
         ENDSEQUENCE
-
     ENDSEQUENCE
-
 ENDDEFINE
+
+SEQUENCE call_ground USING user_request
+
+    FOR EACH column IN Battery
+        IF user_position IS GREATER OR EQUAL TO min_range OF column AND user_position IS SMALLER OR EQUAL TO max_range OF column THEN
+            CALL request_check WITH user_request and column
+
+        ENDIF
+    ENDFOR
+
+ENDSEQUENCE
+
+-------------------------------------------------------------------------------------------------------------------------------pointing system
+SEQUENCE request_check USING user_request and column
+
+    FOR EACH elevator IN column
+        IF elevator_door IS OPEN THEN
+            WAIT FOR elevator_door TO CLOSE THEN
+                CALL points_update WITH user_request and elevator and column
+        
+        ELSE IF elevator_door IS CLOSE THEN
+            CALL points_update WITH user_request and elevator and column
+        
+        ENDIF
+    ENDFOR
+
+    CALL elevator_send WITH user_request and column
+
+ENDSEQUENCE
+
+SEQUENCE points_update USING user_request and elevator
+
+    SET differance_last_stop TO POSITIVE NUMBER OF THE DIFFERANCE BETWEEN LAST INDEX OF stop_list and user_position
+    SET differance_floor TO POSITIVE NUMBER OF THE DIFFERANCE BETWEEN elevator_floor and user_position
+    SET max_differance_floor TO max_range 
+    SET points TO 0
+
+    IF elevator_direction IS NOT EQUAL TO user_direction AND status IS NOT IDLE THEN
+        SET points TO differance_last_stop 
+    
+    ELSE IF status IS IDLE THEN
+        SET points TO max_range PLUS 1
+        INCREMENT points WITH differance_floor
+
+    ELSE IF elevator_direction IS EQUAL TO user_direction AND status IS NOT IDLE THEN
+        SET points TO max_range MULTIPLY BY 2
+        INCREMENT points WITH LENGTH OF 
+
+
+
+
+
+    
+
+ENDSEQUENCE
+-------------------------------------------------------------------------------------------------------------------------------/pointing system
+
+-------------------------------------------------------------------------------------------------------------------------------elevator choice based on points
+SEQUENCE elevator_send USING user_request and column
+
+    SORT IN INCREASING ORDER OF points WITH elevator_list IN column
+
+    SET best_elevator TO the FIRST INDEX OF elevator_list IN column
+
+    CALL add_stop WITH best_elevator and user_request
+
+ENDSEQUENCE
+-------------------------------------------------------------------------------------------------------------------------------/elevator choice based on points
+
+-------------------------------------------------------------------------------------------------------------------------------all stop related function
+SEQUENCE list_sort USING elevator
+
+    IF elevator_direction IS UP THEN
+        SORT IN INCREASING ORDER WITH stop_list
+    
+    ELSE IF elevator_direction IS DOWN THEN
+        SORT IN DECREASING ORDER WITH stop_list
+        
+    ENDIF
+
+ENDSEQUENCE
+-------------------------------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------------------------------
+SEQUENCE add_stop USING elevator and user_request
+
+    IF user_direction IS EQUAL TO elevator_direction AND user_floor IS GREATER OR EQUAL TO elevator_floor THEN
+        ADD user_floor TO stop_list
+
+    ELSE IF user_direction IS EQUAL TO elevator_direction AND user_floor IS SMALLER OR EQUAL TO elevator_door THEN
+        ADD user_floor TO stop_list
+    
+    ELSE IF status IS IDLE THEN
+        ADD user_floor TO stop_list
+
+    ELSE IF user_direction IS NOT EQUAL TO elevator_direction AND user_direction IS UP THEN
+        ADD user_floor TO UP_buffer_list
+
+    ELSE IF user_direction IS NOT EQUAL TO elevator_direction AND user_direction IS DOWN THEN
+        ADD user_floor TO DOWN_buffer_list
+
+    ENDIF
+
+    CALL list_sort WITH elevator
+
+ENDSEQUENCE
+-------------------------------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------------------------------
+SEQUENCE stop_switch USING elevator
+
+    IF LENGTH OF DOWN_buffer_list IS < THAN LENGTH OF UP_buffer_list THEN
+        ADD UP_buffer_list TO stop_list
+
+    ELSE IF LENGTH OF DOWN_buffer_list IS > THAN LENGTH OF UP_buffer_list THEN
+        ADD DOWN_buffer_list TO stop_list
+
+    ELSE IF LENGTH OF DOWN_buffer_list IS EQUAL TO LENGTH OF UP_buffer_list THEN
+        ADD random buffer_list TO stop_list
+
+    ELSE IF UP_buffer_list IS EMPTY AND DOWN_buffer_list IS EMPTY THEN
+        SET status TO IDLE
+        SET elevator_direction TO STOP
+
+    ENDIF
+
+ENDSEQUENCE
+-------------------------------------------------------------------------------------------------------------------------------/all stop related function
+
+    "IF user_direction IS EQUAL TO elevator_direction AND user_position IS EQUAL TO elevator_floor THEN
+        SET points TO NEGATIVE 1
+
+    ELSE IF user_direction IS EQUAL TO elevator_direction AND user_position IS GREATER THAN elevator_floor THEN
+        SET points TO 0
+        CALL pointing WITH user_request and elevator
+
+    ELSE IF user_direction IS EQUAL TO elevator_direction AND user_position IS SMALLER THAN elevator_floor THEN
+        SET points TO 0
+        CALL pointing WITH user_request and elevator
+
+    ELSE IF user_direction IS NOT EQUAL TO elevator_direction AND status IS NOT IDLE THEN
+        SET points TO total_stories PLUS 1
+
+    ENDIF"
+
+SEQUENCE pointing USING user_request and elevator
+
+    SET value TO POSITIVE NUMBER OF THE DIFFERANCE BETWEEN elevator_floor and user_position
+
+    CASE (value) OF
+        FOR min_range TO max_range IN THE column
+            IF range IS EQUAL TO value
+                INCREMENT points IN elevator WITH value PLUS 1
+            ENDIF
+        ENDFOR
+    ENDCASE
+
+ENDSEQUENCE

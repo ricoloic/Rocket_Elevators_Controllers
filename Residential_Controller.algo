@@ -69,20 +69,6 @@ WHILE stop_list OF all elevator IS NOT EMPTY
 ENDWHILE
 
 -------------------------------------------------------------------------------------------------------------------------------pointing system
-SEQUENCE pointing USING user_request and elevator
-
-    SET valut TO POSITIVE NUMBER OF DIFFERANCE BETWEEN elevator_floor and user_floor
-
-    CASE (value) OF
-        FOR EACH floor IN the building
-            IF floor IS EQUAL TO value
-                INCREMENT points IN elevator WITH value + 1
-            ENDIF
-        ENDFOR
-    ENDCASE
-
-ENDSEQUENCE
-
 SEQUENCE request_check USING user_request
 
     FOR EACH elevator IN columns
@@ -97,6 +83,20 @@ SEQUENCE request_check USING user_request
     ENDFOR
 
     CALL elevator_send WITH user_request
+
+ENDSEQUENCE
+
+SEQUENCE pointing USING user_request and elevator
+
+    SET value TO POSITIVE NUMBER OF DIFFERANCE BETWEEN elevator_floor and user_floor
+
+    CASE (value) OF
+        FOR EACH floor IN the building
+            IF floor IS EQUAL TO value
+                INCREMENT points IN elevator WITH value + 1
+            ENDIF
+        ENDFOR
+    ENDCASE
 
 ENDSEQUENCE
 
@@ -223,15 +223,15 @@ ENDSEQUENCE
 SEQUENCE run USING elevator 
 
     IF stop_list IS NOT EMPTY AND elevator_door IS CLOSE THEN
-        IF stop_list[next_stop] IS SMALER THAN elevator_floor THEN
+        IF FIRST INDEX OF stop_list IS SMALER THAN elevator_floor THEN
             SET elevator_direction TO DOWN
             SET status TO MOVING
 
-        ELSE IF stop_list[next_stop] IS GREATER THAN elevator_floor AND elevator_door IS CLOSE THEN
+        ELSE IF FIRST INDEX OF stop_list IS GREATER THAN elevator_floor THEN
             SET elevator_direction TO UP
             SET status TO MOVING
 
-        ELSE IF stop_list[next_stop] EQUAL elevator_floor AND elevator_door IS CLOSE THEN
+        ELSE IF FIRST INDEX OF stop_list EQUAL elevator_floor THEN
             REMOVE this_stop FROM stop_list
             CALL door_state WITH elevator
             SET btn_floor OF elevator_floor TO INACTIVE light
@@ -241,7 +241,7 @@ SEQUENCE run USING elevator
 
         ENDIF
 
-    ELSE stop_list IS EMPTY THEN
+    ELSE stop_list IS EMPTY AND elevator_door IS CLOSE THEN
         CALL stop_change WITH elevator
 
     ENDIF
