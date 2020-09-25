@@ -17,7 +17,7 @@ DEFINE elevator USING floor_amount
     SET elevator_door TO CLOSE
     SET status TO IDLE
 
-    SEQUENCE list_sort USING elevator
+    SEQUENCE list_sort
 
         IF elevator_direction IS UP THEN
             SORT stop_list IN INCREASING ORDER
@@ -141,6 +141,8 @@ DEFINE elevator USING floor_amount
 
         ENDIF
 
+        CALL list_sort
+
     ENDSEQUENCE
 
     SEQUENCE run
@@ -160,7 +162,7 @@ DEFINE elevator USING floor_amount
 
             ELSE IF FIRST INDEX OF stop_list EQUAL elevator_floor THEN
                 REMOVE FIRST INDEX FROM stop_list
-                CALL door_state WITH elevator
+                CALL door_state
                 SET floor_btn OF elevator_floor TO INACTIVE light
                 SET btn_up FOR user_floor TO INACTIVE light
                 SET btn_down FOR user_floor TO INACTIVE light
@@ -169,7 +171,7 @@ DEFINE elevator USING floor_amount
             ENDIF
 
         ELSE stop_list IS EMPTY AND elevator_door IS CLOSE THEN
-            CALL stop_switch WITH elevator and previous_direction
+            CALL stop_switch WITH previous_direction
 
         ENDIF
 
@@ -184,49 +186,47 @@ DEFINE elevator USING floor_amount
 
 ENDDEFINE
 
-DEFINE user_request USING floor
+DEFINE user_request USING floor and floor_amount
 
-    SET btn {
-        IF floor IS EQUAL TO 1 THEN
-            SET btn_up
-            SET user_direction TO UP
-            SET user_position TO floor
+    IF floor IS EQUAL TO 1 THEN
+        SET btn_up
+        SET user_direction TO UP
+        SET user_position TO floor
 
-        ELSE IF floor IS EQUAl TO floor_amount THEN
-            SET btn_down
+    ELSE IF floor IS EQUAl TO floor_amount THEN
+        SET btn_down
+        SET user_direction TO DOWN
+        SET user_position TO floor
+
+    ELSE 
+        SET btn_down {
             SET user_direction TO DOWN
-            SET user_position TO floor
+        }
 
-        ELSE 
-            SET btn_down {
-                SET user_direction TO DOWN
-            }
+        SET btn_up {
+            SET user_direction TO UP
+        }
 
-            SET btn_up {
-                SET user_direction TO UP
-            }
+        SET user_position TO floor
 
-            SET user_position TO floor
-
-        ENDIF
-    }
+    ENDIF
 
 ENDDEFINE
 
 DEFINE Columns USING floor_amount AND elevator_per_column
 
     user_list: SET TO EMPTY List
-    SEQUENCE create_user_list USING floor_amount
+    SEQUENCE create_user_list
 
         FOR EACH floor IN the building
-            SET new_user TO INSTANTIATE user_request WITH floor
+            SET new_user TO INSTANTIATE user_request WITH floor and floor_amount
             ADD new_user TO user_list
         ENDFOR
 
     ENDSEQUENCE
 
     elevator_list: SET TO EMPTY List
-    SEQUENCE create_elevator_list USING elevator_per_column
+    SEQUENCE create_elevator_list
 
         FOR elevator_per_column
             SET new_elevator TO INSTANTIATE elevator WITH floor_amount
@@ -245,9 +245,8 @@ DEFINE Columns USING floor_amount AND elevator_per_column
 
     ENDSEQUENCE
 
-    WHEN user IN user_list PRESS btn
-        SET user_direction TO UP
-        SET btn_up TO ACTIVE light
+    WHEN user IN user_list PRESS btn_up OR btn_down
+        SET btn TO ACTIVE light
 
         FOR EACH elevator IN elevator_list
             CALL request_check OF elevator WITH user_request
@@ -257,4 +256,4 @@ DEFINE Columns USING floor_amount AND elevator_per_column
 
 ENDDEFINE
 
-INSTANTIATE Columns WITH floor_amount and elevator_per_column
+SET columm TO INSTANTIATE Columns WITH floor_amount and elevator_per_column
