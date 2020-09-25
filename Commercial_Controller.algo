@@ -59,7 +59,6 @@ DEFINE Elevator USING total_basement
     SET elevator_door TO CLOSE
     SET status TO IDLE
 
-
     SEQUENCE points_update_floor USING user_request and max_range
 
         IF status IS NOT IDLE THEN
@@ -139,11 +138,11 @@ DEFINE Elevator USING total_basement
     SEQUENCE add_stop USING user_request
 
         IF user_position IS EQUAL TO total_basement PLUS 1 THEN
-            IF user_direction IS NOT EQUAL TO elevator_direction AND user_position IS SMALLER THAN elevator_floor THEN
+            IF user_direction IS NOT EQUAL TO elevator_direction AND user_position IS SMALLER OR EQUAL TO elevator_floor THEN
                 ADD user_position TO stop_list
                 ADD user_stop TO UP_buffer_list
 
-            ELSE IF user_direction IS NOT EQUAL TO elevator_direction AND user_position IS GREATER THAN elevator_foor THEN
+            ELSE IF user_direction IS NOT EQUAL TO elevator_direction AND user_position IS GREATER OR EQUAL TO elevator_foor THEN
                 ADD user_position TO stop_list
                 ADD user_stop TO DOWN_buffer_list
             
@@ -157,11 +156,11 @@ DEFINE Elevator USING total_basement
 
                 ENDIF
 
-            ELSE IF user_direction IS EQUAL TO elevator_direction AND user_position IS SMALLER OR EQUAL THAN elevator_floor THEN
+            ELSE IF user_direction IS EQUAL TO elevator_direction AND user_position IS SMALLER THAN elevator_floor THEN
                 ADD user_position TO DOWN_buffer_list
                 ADD user_stop TO UP_buffer_list
 
-            ELSE IF user_direction IS EQUAL TO elevator_direction AND user_direction IS GREATER OR EQUAL THAN elevator_floor THEN
+            ELSE IF user_direction IS EQUAL TO elevator_direction AND user_direction IS GREATER THAN elevator_floor THEN
                 ADD user_position TO UP_buffer_list
                 ADD user_stop TO DOWN_buffer_list
 
@@ -284,7 +283,7 @@ DEFINE Column USING total_floor and total_basement and num_elev_per_column and f
     SET status TO ACTIVE
     init max_range
     init min_range
-    
+
     SEQUENCE set_range
         IF iteration IS EQUAL TO 0 THEN
             SET max_range TO total_basement

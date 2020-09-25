@@ -39,20 +39,20 @@ DEFINE elevator USING floor_amount
 
     SEQUENCE add_stop USING user_request
 
-        IF user_direction IS EQUAL TO elevator_direction AND user_floor IS GREATER OR EQUAL TO elevator_floor THEN
-            ADD user_floor TO stop_list
+        IF user_direction IS EQUAL TO elevator_direction AND user_direction IS UP AND user_position IS GREATER OR EQUAL TO elevator_floor THEN
+            ADD user_position TO stop_list
 
-        ELSE IF user_direction IS EQUAl TO elevator_direction AND user_floor IS SMALER OR EQUAl TO elevator_foor THEN
-            ADD user_floor TO stop_list
+        ELSE IF user_direction IS EQUAL TO elevator_direction AND user_direction IS DOWN AND user_position IS SMALER OR EQUAL TO elevator_foor THEN
+            ADD user_position TO stop_list
         
         ELSE IF status IS IDLE THEN
-            ADD user_floor TO stop_list
+            ADD user_position TO stop_list
 
-        ELSE IF user_direction IS NOT EQUAL TO elevator_direction AND user_direction IS UP THEN
-            ADD user_floor TO UP_buffer_list
+        ELSE IF user_direction IS UP THEN
+            ADD user_position TO UP_buffer_list
 
-        ELSE IF user_direction IS NOT EQUAL TO elevator_direction AND user_direction IS DOWN THEN
-            ADD user_floor TO DOWN_buffer_list
+        ELSE IF user_direction IS DOWN THEN
+            ADD user_position TO DOWN_buffer_list
 
         ENDIF
 
@@ -164,8 +164,8 @@ DEFINE elevator USING floor_amount
                 REMOVE FIRST INDEX FROM stop_list
                 CALL door_state
                 SET floor_btn OF elevator_floor TO INACTIVE light
-                SET btn_up FOR user_floor TO INACTIVE light
-                SET btn_down FOR user_floor TO INACTIVE light
+                SET btn_up FOR user_position TO INACTIVE light
+                SET btn_down FOR user_position TO INACTIVE light
                 DISPLAY "Reached floor" + elevator_floor
 
             ENDIF
@@ -193,7 +193,7 @@ DEFINE user_request USING floor and floor_amount
         SET user_direction TO UP
         SET user_position TO floor
 
-    ELSE IF floor IS EQUAl TO floor_amount THEN
+    ELSE IF floor IS EQUAL TO floor_amount THEN
         SET btn_down
         SET user_direction TO DOWN
         SET user_position TO floor
