@@ -8,12 +8,15 @@ DEFINE elevator USING floor_amount
             SET floor_btn TO floor
         ENDFOR
     }
+    init elevator_screen
     init points
     init stop_list
     init UP_buffer_list
     init DOWN_buffer_list
     init elevator_direction
+    init previous_direction
     SET elevator_floor TO 1
+    SET elevator_previous_floor TO 1
     SET elevator_door TO CLOSE
     SET status TO IDLE
 
@@ -21,7 +24,7 @@ DEFINE elevator USING floor_amount
 
         IF elevator_direction IS UP THEN
             SORT stop_list IN INCREASING ORDER
-        
+
         ELSE IF elevator_direction IS DOWN THEN
             SORT stop_list IN DECREASING ORDER
 
@@ -42,9 +45,9 @@ DEFINE elevator USING floor_amount
         IF user_direction IS EQUAL TO elevator_direction AND user_direction IS UP AND user_position IS GREATER OR EQUAL TO elevator_floor THEN
             ADD user_position TO stop_list
 
-        ELSE IF user_direction IS EQUAL TO elevator_direction AND user_direction IS DOWN AND user_position IS SMALER OR EQUAL TO elevator_foor THEN
+        ELSE IF user_direction IS EQUAL TO elevator_direction AND user_direction IS DOWN AND user_position IS SMALLER OR EQUAL TO elevator_foor THEN
             ADD user_position TO stop_list
-        
+
         ELSE IF status IS IDLE THEN
             ADD user_position TO stop_list
 
@@ -66,27 +69,37 @@ DEFINE elevator USING floor_amount
             SET differance_last_stop TO POSITIVE NUMBER OF THE DIFFERANCE BETWEEN LAST INDEX OF stop_list and user_position
         ENDIF
 
+        SET max_floor_differance TO floor_amount MINUS 1
         SET differance_floor TO POSITIVE NUMBER OF THE DIFFERANCE BETWEEN elevator_floor and user_position
         SET points TO 0
 
         IF elevator_direction IS EQUAL TO user_direction AND status IS NOT IDLE THEN
-            IF user_position IS GREATER OR EQUAL TO elevator_floor THEN 'up
+            IF user_position IS GREATER OR EQUAL TO elevator_floor AND user_direction IS UP THEN 'up
                 SET points TO differance_floor
-            
-            ELSE IF user_position IS SMALLER OR EQUAL TO elevator_foor THEN
-                SET points TO differance_floor
+                INCREMENT points WITH LENGTH OF stop_list
 
-            ELSE
-                SET points TO differance_floor PLUS differance_last_stop
+            ELSE IF user_position IS SMALLER OR EQUAL TO elevator_foor AND user_direction IS DOWN THEN
+                SET points TO differance_floor
+                INCREMENT points WITH LENGTH OF stop_list
+
+            ELSE IF user_position IS SMALLER THAN elevator_floor AND user_direction IS UP THEN
+                SET points TO max_floor_differance
+                INCREMENT points WITH differance_last_stop
+                INCREMENT points WITH LENGTH OF stop_list
+
+            ELSE IF user_position IS GREATER THAN elevator_floor AND user_direction IS DOWN THEN
+                SET points TO max_floor_differance
+                INCREMENT points WITH differance_last_stop
+                INCREMENT points WITH LENGTH OF stop_list
 
             ENDIF
 
         ELSE IF status IS IDLE THEN
-            SET points TO max_range PLUS 1
+            SET points TO max_floor_differance
             INCREMENT points WITH differance_floor
 
         ELSE IF elevator_direction IS NOT EQUAL TO user_direction AND status IS NOT IDLE THEN
-            SET points TO max_range MULTIPLY BY 2
+            SET points TO max_floor_differance MULTIPLY BY 2
             INCREMENT points WITH LENGTH OF stop_list
             INCREMENT points WITH differance_last_stop
 
@@ -147,17 +160,17 @@ DEFINE elevator USING floor_amount
 
     SEQUENCE run
 
-        init previous_direction
-
         IF stop_list IS NOT EMPTY AND elevator_door IS CLOSE THEN
             IF FIRST INDEX OF stop_list IS SMALLER THAN elevator_floor THEN
                 SET elevator_direction TO DOWN
                 SET previous_direction TO DOWN
+                DECREMENT elevator_floor WITH 1
                 SET status TO MOVING
 
             ELSE IF FIRST INDEX OF stop_list IS GREATER THAN elevator_floor THEN
                 SET elevator_direction TO UP
                 SET previous_direction TO UP
+                INCREMENT elevator_floor WITH 1
                 SET status TO MOVING
 
             ELSE IF FIRST INDEX OF stop_list EQUAL elevator_floor THEN
@@ -166,13 +179,18 @@ DEFINE elevator USING floor_amount
                 SET floor_btn OF elevator_floor TO INACTIVE light
                 SET btn_up FOR user_position TO INACTIVE light
                 SET btn_down FOR user_position TO INACTIVE light
-                DISPLAY "Reached floor" + elevator_floor
 
             ENDIF
 
         ELSE stop_list IS EMPTY AND elevator_door IS CLOSE THEN
             CALL stop_switch WITH previous_direction
 
+        ENDIF
+
+        IF elevator_previous_floor IS NOT EQUAL TO elevator_floor THEN
+            DISPLAY elevator_floor ON TO elevator_screen
+            SET elevator_previous_floor TO elevator_floor
+        
         ENDIF
 
     ENDSEQUENCE

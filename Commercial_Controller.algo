@@ -50,12 +50,15 @@ ENDDEFINE
 
 DEFINE Elevator USING total_basement
 
+    init elevator_screen TO total_basement PLUS 1
     init points
     init stop_list
     init UP_buffer_list
     init DOWN_buffer_list
     init elevator_direction
+    init previous_direction
     SET elevator_floor TO total_basement PLUS 1
+    SET elevator_previous_floor TO total_basement PLUS 1
     SET elevator_door TO CLOSE
     SET status TO IDLE
 
@@ -69,14 +72,23 @@ DEFINE Elevator USING total_basement
         SET points TO 0
 
         IF elevator_direction IS EQUAL TO user_direction AND status IS NOT IDLE THEN
-            IF user_position IS GREATER OR EQUAL TO elevator_floor THEN 'up
+            IF user_position IS GREATER OR EQUAL TO elevator_floor AND user_direction IS UP THEN
                 SET points TO differance_floor
+                INCREMENT points WITH LENGTH OF stop_list
             
-            ELSE IF user_position IS SMALLER OR EQUAL TO elevator_foor THEN
+            ELSE IF user_position IS SMALLER OR EQUAL TO elevator_floor AND user_direction IS DOWN THEN
                 SET points TO differance_floor
+                INCREMENT points WITH LENGTH OF stop_list
 
-            ELSE
-                SET points TO differance_floor PLUS differance_last_stop
+            ELSE IF user_position IS SMALLER THAN elevator_floor AND user_direction IS UP THEN
+                SET points TO max_range
+                INCREMENT points WITH differance_last_stop
+                INCREMENT points WITH LENGTH OF stop_list
+
+            ELSE IF user_position IS GREATER THAN elevator_floor AND user_direction IS DOWN THEN
+                SET points TO max_range
+                INCREMENT points WITH differance_last_stop
+                INCREMENT points WITH LENGTH OF stop_list
 
             ENDIF
 
@@ -85,7 +97,7 @@ DEFINE Elevator USING total_basement
             INCREMENT points WITH differance_floor
 
         ELSE IF elevator_direction IS NOT EQUAL TO user_direction AND status IS NOT IDLE THEN
-            SET points TO max_range MULTIPLY BY 2
+            SET points TO max_range MULTIPLY WITH 2
             INCREMENT points WITH LENGTH OF stop_list
             INCREMENT points WITH differance_last_stop
 
@@ -111,13 +123,13 @@ DEFINE Elevator USING total_basement
             INCREMENT points WITH differance_floor
 
         ELSE IF elevator_direction IS EQUAL TO user_direction AND status IS NOT IDLE THEN
-            SET points TO max_range MULTIPLY BY 2
+            SET points TO max_range MULTIPLY WITH 2
             INCREMENT points WITH LENGTH OF stop_list
             INCREMENT points WITH differance_last_stop
 
         ENDIF
 
-        IF elevator_direction IS EQUAL TO user_direction AND elevator_floor IS EQUAL TO user_position THEN
+        IF elevator_floor IS EQUAL TO user_position THEN
             SET points WITH LENGTH OF stop_list
         ENDIF
 
@@ -142,7 +154,7 @@ DEFINE Elevator USING total_basement
                 ADD user_position TO stop_list
                 ADD user_stop TO UP_buffer_list
 
-            ELSE IF user_direction IS NOT EQUAL TO elevator_direction AND user_position IS GREATER OR EQUAL TO elevator_foor THEN
+            ELSE IF user_direction IS NOT EQUAL TO elevator_direction AND user_position IS GREATER OR EQUAL TO elevator_floor THEN
                 ADD user_position TO stop_list
                 ADD user_stop TO DOWN_buffer_list
             
@@ -155,6 +167,14 @@ DEFINE Elevator USING total_basement
                     ADD user_stop TO UP_buffer_list
 
                 ENDIF
+
+            ELSE IF user_direction IS EQUAL TO elevator_direction AND user_position IS EQUAL TO elevator_floor AND user_direction IS UP THEN
+                ADD user_position TO stop_list
+                ADD user_stop TO UP_buffer_list
+
+            ELSE IF user_direction IS EQUAL TO elevator_direction AND user_position IS EQUAL TO elevator_floor AND user_direction IS DOWN THEN
+                ADD user_position TO stop_list
+                ADD user_stop TO DOWN_buffer_list
 
             ELSE IF user_direction IS EQUAL TO elevator_direction AND user_position IS SMALLER THAN elevator_floor THEN
                 ADD user_position TO DOWN_buffer_list
@@ -185,7 +205,7 @@ DEFINE Elevator USING total_basement
                 ADD user_position TO stop_list
                 ADD user_stop TO stop_list
 
-            ELSE IF user_direction IS UP AND user_direction IS EQUAL TO elevator_direction AND user_position IS SMALLER THAN elevator_foor THEN
+            ELSE IF user_direction IS UP AND user_direction IS EQUAL TO elevator_direction AND user_position IS SMALLER THAN elevator_floor THEN
                 ADD user_position TO DOWN_buffer_list
                 ADD user_stop TO UP_buffer_list
             
@@ -246,17 +266,17 @@ DEFINE Elevator USING total_basement
     
     SEQUENCE run
 
-        init previous_direction
-
         IF stop_list IS NOT EMPTY AND elevator_door IS CLOSE THEN
             IF FIRST INDEX OF stop_list IS SMALLER THAN elevator_floor THEN
                 SET elevator_direction TO DOWN
                 SET previous_direction TO DOWN
+                DECREMENT elevator_floor WITH 1
                 SET status TO MOVING
 
             ELSE IF FIRST INDEX OF stop_list IS GREATER THAN elevator_floor THEN
                 SET elevator_direction TO UP
                 SET previous_direction TO UP
+                INCREMENT elevator_floor WITH 1
                 SET status TO MOVING
 
             ELSE IF FIRST INDEX OF stop_list EQUAL elevator_floor THEN
@@ -266,7 +286,13 @@ DEFINE Elevator USING total_basement
             ENDIF
 
         ELSE stop_list IS EMPTY AND elevator_door IS CLOSE THEN
-            CALL stop_switch WITH previous_direction
+            CALL stop_switch
+
+        ENDIF
+
+        IF elevator_previous_floor IS NOT EQUAL TO elevator_floor THEN
+            DISPLAY elevator_floor ON TO elevator_screen
+            SET elevator_previous_floor TO elevator_floor
 
         ENDIF
 
@@ -280,20 +306,34 @@ ENDDEFINE
 
 DEFINE Column USING total_floor and total_basement and num_elev_per_column and floor_per_column and iteration and columns_list
 
+    SET ID TO iteration
     SET status TO ACTIVE
     init max_range
     init min_range
 
     SEQUENCE set_range
-        IF iteration IS EQUAL TO 0 THEN
-            SET max_range TO total_basement
-            SET min_range TO 1
+        IF total_basement IS NOT EQUAL TO 0 THEN
+            IF iteration IS EQUAL TO 0 THEN
+                SET max_range TO total_basement
+                SET min_range TO 1
 
+            ELSE
+                SET max_range TO (iteration MULTIPLY WITH floor_per_column) PLUS total_basement PLUS 1
+                SET min_range TO (max_range OF previous INDEX IN columns_list) PLUS 1
+
+            ENDIF
         ELSE
-            SET max_range TO (iteration MULTIPLY BY floor_per_column) PLUS total_basement PLUS 1
-            SET min_range TO max_range PLUS 1 OF user_list INDEX iteration MINUS 1 
+            IF iteration IS EQUAL TO 0 THEN
+                SET max_range TO floor_per_column
+                SET min_range TO 1
 
+            ELSE
+                SET max_range TO iteration MULTIPLY WITH floor_per_column PLUS 1
+                SET min_range TO (max_range OF previous INDEX IN columns_list) PLUS 1
+
+            ENDIF
         ENDIF
+
     ENDSEQUENCE
 
     elevator_list: SET TO EMPTY list
@@ -345,7 +385,7 @@ DEFINE Column USING total_floor and total_basement and num_elev_per_column and f
 
 ENDDEFINE
 
-DEFINE Battery USING num_column_per_battery and total_floor and total_basement and num_elev_per_column
+DEFINE Battery USING num_columns_per_battery and total_floor and total_basement and num_elev_per_column
 
     user_list: SET TO EMPTY list
     SEQUENCE create_user_list
@@ -365,13 +405,21 @@ DEFINE Battery USING num_column_per_battery and total_floor and total_basement a
     SEQUENCE create_culumns_list
 
         SET iteration TO 0
-        SET floor_per_column TO total_floor DIVIDED BY (SUBSTRACT 1 FROM number_columns_per_battery)
 
-        FOR number_columns_per_battery
+        IF total_basement IS EQUAL TO 0 THEN
+            SET floor_per_column TO total_floor DIVIDED WITH num_column_per_battery
+
+        ELSE 
+            SET floor_per_column TO total_floor DIVIDED WITH (num_columns_per_battery MINUS 1)
+
+        ENDIF
+
+        FOR num_column_per_battery
             SET column TO INSTANTIATE Column WITH total_floor and total_basement and num_elev_per_column and floor_per_column and iteration and columns_list
             ADD column TO columns_list
             INCREMENT iteration WITH 1
         ENDFOR
+
 
     ENDSEQUENCE
 
@@ -395,9 +443,9 @@ DEFINE Battery USING num_column_per_battery and total_floor and total_basement a
 
     ENDSEQUENCE
 
-    WHEN btn_floor OR btn_ground_floor IS PRESS THEN
+    WHEN btn_floor OR btn_ground_floor OR btn_basement IS PRESS THEN
         CALL selection WITH user_request
 
 ENDDEFINE
 
-SET battery TO INSTANTIATE Battery WITH num_column_per_battery and total_floor and total_basement and num_elev_per_column
+SET battery TO INSTANTIATE Battery WITH num_column_per_battery and total_floor and total_basement (DEFAULT TO 0) and num_elev_per_column
