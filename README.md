@@ -7,4 +7,4 @@ Hi, So now that we are in Odyssey what is there to do ? **WEEK 3 - ELEVATORS CON
 We were also asked to make a video with a maximum time of 5 minutes to explain our algorithm, well there it is but if you really want to understand the utilization and the capability of the algorithm you'll have to look at its inside 
 [VIDEO](https://youtu.be/PL7zzutB3mI)
 
- > ##### Little int, the algorithm is mostly in the pointing system and in the addition of the stop to the elevator
+ > ##### Little hint, the algorithm is mostly in the pointing system and in the addition of the stop to the elevator
