@@ -48,8 +48,9 @@ DEFINE User_request USING total_basement and story and total_stories
 
 ENDDEFINE
 
-DEFINE Elevator USING total_basement
+DEFINE Elevator USING total_basement and _id
 
+    SET ID TO _id
     init elevator_screen TO total_basement PLUS 1
     init points
     init stop_list
@@ -304,7 +305,7 @@ DEFINE Elevator USING total_basement
 
 ENDDEFINE
 
-DEFINE Column USING total_floor and total_basement and num_elev_per_column and floor_per_column and iteration and columns_list
+DEFINE Column USING total_floor and total_basement and num_elev_per_column and floor_per_column and iteration and columns_list and user_list
 
     SET ID TO iteration
     SET status TO ACTIVE
@@ -338,9 +339,11 @@ DEFINE Column USING total_floor and total_basement and num_elev_per_column and f
 
     elevator_list: SET TO EMPTY list
     SEQUENCE create_elevators_list USING num_elev_per_column
+        SET _id TO 1
         FOR num_elev_per_column
-            SET elevator TO INSTANTIATE Elevator WITH total_basement
+            SET elevator TO INSTANTIATE Elevator WITH total_basement and _id
             ADD elevator TO elevator_list
+            INCREMENT _id WITH 1
         ENDFOR
 
     ENDSEQUENCE
@@ -350,6 +353,12 @@ DEFINE Column USING total_floor and total_basement and num_elev_per_column and f
         SORT elevator_list IN INCREASING ORDER OF points
 
         SET best_elevator TO the FIRST INDEX OF elevator_list
+
+        IF user_position IS EQUAL TO total_basement PLUS 1 THEN
+            FOR time OF 7.5sec
+                DISPLAY ID and ID OF best_elevator ON TO panel OF user_position INDEX IN user_list
+            ENDFOR
+        ENDIF
 
         CALL add_stop OF best_elevator WITH user_request
 
@@ -382,7 +391,6 @@ DEFINE Column USING total_floor and total_basement and num_elev_per_column and f
         CALL elevator_send WITH user_request
 
     ENDSEQUENCE
-
 ENDDEFINE
 
 DEFINE Battery USING num_columns_per_battery and total_floor and total_basement and num_elev_per_column
@@ -415,11 +423,10 @@ DEFINE Battery USING num_columns_per_battery and total_floor and total_basement 
         ENDIF
 
         FOR num_column_per_battery
-            SET column TO INSTANTIATE Column WITH total_floor and total_basement and num_elev_per_column and floor_per_column and iteration and columns_list
+            SET column TO INSTANTIATE Column WITH total_floor and total_basement and num_elev_per_column and floor_per_column and iteration and columns_list and user_list
             ADD column TO columns_list
             INCREMENT iteration WITH 1
         ENDFOR
-
 
     ENDSEQUENCE
 
@@ -448,4 +455,6 @@ DEFINE Battery USING num_columns_per_battery and total_floor and total_basement 
 
 ENDDEFINE
 
-SET battery TO INSTANTIATE Battery WITH num_column_per_battery and total_floor and total_basement (DEFAULT TO 0) and num_elev_per_column
+SET battery TO INSTANTIATE Battery WITH num_column_per_battery and total_floor and total_basement => (DEFAULT TO 0) and num_elev_per_column
+
+
