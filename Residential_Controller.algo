@@ -1,0 +1,277 @@
+***************************************
+-------------RESIDENTIAL---------------
+***************************************
+DEFINE elevator USING floor_amount
+
+    SET elevator_btn {
+        FOR EACH floor in the building
+            SET floor_btn TO floor
+        ENDFOR
+    }
+    init elevator_screen
+    init points
+    init stop_list
+    init UP_buffer_list
+    init DOWN_buffer_list
+    init elevator_direction
+    init previous_direction
+    SET elevator_floor TO 1
+    SET elevator_previous_floor TO 1
+    SET elevator_door TO CLOSE
+    SET status TO IDLE
+
+    SEQUENCE list_sort
+
+        IF elevator_direction IS UP THEN
+            SORT stop_list IN INCREASING ORDER
+
+        ELSE IF elevator_direction IS DOWN THEN
+            SORT stop_list IN DECREASING ORDER
+
+        ENDIF
+
+    ENDSEQUENCE
+
+    SEQUENCE stop_btn USING elevator_btn
+
+        ADD floor_btn TO stop_list
+        SET elevator_btn TO ACTIVE light
+        CALL list_sort
+
+    ENDSEQUENCE
+
+    SEQUENCE add_stop USING user_request
+
+        IF user_direction IS EQUAL TO elevator_direction AND user_direction IS UP AND user_position IS GREATER OR EQUAL TO elevator_floor THEN
+            ADD user_position TO stop_list
+
+        ELSE IF user_direction IS EQUAL TO elevator_direction AND user_direction IS DOWN AND user_position IS SMALLER OR EQUAL TO elevator_foor THEN
+            ADD user_position TO stop_list
+
+        ELSE IF status IS IDLE THEN
+            ADD user_position TO stop_list
+
+        ELSE IF user_direction IS UP THEN
+            ADD user_position TO UP_buffer_list
+
+        ELSE IF user_direction IS DOWN THEN
+            ADD user_position TO DOWN_buffer_list
+
+        ENDIF
+
+        CALL list_sort
+
+    ENDSEQUENCE
+
+    SEQUENCE points_update USING user_request
+
+        IF status IS NOT IDLE THEN
+            SET differance_last_stop TO POSITIVE NUMBER OF THE DIFFERANCE BETWEEN LAST INDEX OF stop_list and user_position
+        ENDIF
+
+        SET max_floor_differance TO floor_amount MINUS 1
+        SET differance_floor TO POSITIVE NUMBER OF THE DIFFERANCE BETWEEN elevator_floor and user_position
+        SET points TO 0
+
+        IF elevator_direction IS EQUAL TO user_direction AND status IS NOT IDLE THEN
+            IF user_position IS GREATER OR EQUAL TO elevator_floor AND user_direction IS UP THEN 'up
+                SET points TO differance_floor
+                INCREMENT points WITH LENGTH OF stop_list
+
+            ELSE IF user_position IS SMALLER OR EQUAL TO elevator_foor AND user_direction IS DOWN THEN
+                SET points TO differance_floor
+                INCREMENT points WITH LENGTH OF stop_list
+
+            ELSE IF user_position IS SMALLER THAN elevator_floor AND user_direction IS UP THEN
+                SET points TO max_floor_differance
+                INCREMENT points WITH differance_last_stop
+                INCREMENT points WITH LENGTH OF stop_list
+
+            ELSE IF user_position IS GREATER THAN elevator_floor AND user_direction IS DOWN THEN
+                SET points TO max_floor_differance
+                INCREMENT points WITH differance_last_stop
+                INCREMENT points WITH LENGTH OF stop_list
+
+            ENDIF
+
+        ELSE IF status IS IDLE THEN
+            SET points TO max_floor_differance
+            INCREMENT points WITH differance_floor
+
+        ELSE IF elevator_direction IS NOT EQUAL TO user_direction AND status IS NOT IDLE THEN
+            SET points TO max_floor_differance MULTIPLY BY 2
+            INCREMENT points WITH LENGTH OF stop_list
+            INCREMENT points WITH differance_last_stop
+
+        ENDIF
+
+    ENDSEQUENCE
+
+    SEQUENCE request_check USING user_request
+
+        IF elevator_door IS OPEN THEN
+            WAIT FOR elevator_door TO CLOSE THEN
+                CALL points_update WITH user_request
+        
+        ELSE IF elevator_door IS CLOSE THEN
+            CALL points_update WITH user_request
+
+        ENDIF
+
+    ENDSEQUENCE
+
+    SEQUENCE door_state
+
+        FOR time OF 15sec
+            SET elevator_door TO OPEN
+            SET elevator_direction TO STOP
+        ENDFOR
+
+        SET elevator_door TO CLOSE
+
+    ENDSEQUENCE
+
+    SEQUENCE stop_switch
+
+        IF DOWN_buffer_list IS NOT EMPTY AND UP_buffer_list IS NOT EMPTY THEN
+            IF previous_direction IS UP THEN
+                ADD DOWN_buffer_list TO stop_list
+
+            ELSE IF previous_direction IS DOWN THEN
+                ADD UP_buffer_list TO stop_list
+
+            ENDIF
+
+        ELSE IF DOWN_buffer_list IS NOT EMPTY AND UP_buffer_list IS EMPTY THEN
+            ADD DOWN_buffer_list TO stop_list
+
+        ELSE IF UP_buffer_list IS NOT EMPTY AND DOWN_buffer_list IS EMPTY THEN
+            ADD UP_buffer_list TO stop_list
+
+        ELSE IF UP_buffer_list IS EMPTY AND DOWN_buffer_list IS EMPTY THEN
+            SET status TO IDLE
+            SET elevator_direction TO STOP
+
+        ENDIF
+
+        CALL list_sort
+
+    ENDSEQUENCE
+
+    SEQUENCE run
+
+        IF stop_list IS NOT EMPTY AND elevator_door IS CLOSE THEN
+            IF FIRST INDEX OF stop_list IS SMALLER THAN elevator_floor THEN
+                SET elevator_direction TO DOWN
+                SET previous_direction TO DOWN
+                DECREMENT elevator_floor WITH 1
+                SET status TO MOVING
+
+            ELSE IF FIRST INDEX OF stop_list IS GREATER THAN elevator_floor THEN
+                SET elevator_direction TO UP
+                SET previous_direction TO UP
+                INCREMENT elevator_floor WITH 1
+                SET status TO MOVING
+
+            ELSE IF FIRST INDEX OF stop_list EQUAL elevator_floor THEN
+                REMOVE FIRST INDEX FROM stop_list
+                CALL door_state
+                SET floor_btn OF elevator_floor TO INACTIVE light
+                SET btn_up FOR user_position TO INACTIVE light
+                SET btn_down FOR user_position TO INACTIVE light
+
+            ENDIF
+
+        ELSE stop_list IS EMPTY AND elevator_door IS CLOSE THEN
+            CALL stop_switch WITH previous_direction
+
+        ENDIF
+
+        IF elevator_previous_floor IS NOT EQUAL TO elevator_floor THEN
+            DISPLAY elevator_floor ON TO elevator_screen
+            SET elevator_previous_floor TO elevator_floor
+        
+        ENDIF
+
+    ENDSEQUENCE
+
+    WHEN elevator_btn IS PRESS
+        CALL stop_btn WITH elevator_btn
+
+    WHILE stop_list IS NOT EMPTY
+        CALL run
+    ENDWHILE
+
+ENDDEFINE
+
+DEFINE user_request USING floor and floor_amount
+
+    IF floor IS EQUAL TO 1 THEN
+        SET btn_up
+        SET user_direction TO UP
+        SET user_position TO floor
+
+    ELSE IF floor IS EQUAL TO floor_amount THEN
+        SET btn_down
+        SET user_direction TO DOWN
+        SET user_position TO floor
+
+    ELSE 
+        SET btn_down {
+            SET user_direction TO DOWN
+        }
+
+        SET btn_up {
+            SET user_direction TO UP
+        }
+
+        SET user_position TO floor
+
+    ENDIF
+
+ENDDEFINE
+
+DEFINE Columns USING floor_amount AND elevator_per_column
+
+    user_list: SET TO EMPTY List
+    SEQUENCE create_user_list
+
+        FOR EACH floor IN the building
+            SET new_user TO INSTANTIATE user_request WITH floor and floor_amount
+            ADD new_user TO user_list
+        ENDFOR
+
+    ENDSEQUENCE
+
+    elevator_list: SET TO EMPTY List
+    SEQUENCE create_elevator_list
+
+        FOR elevator_per_column
+            SET new_elevator TO INSTANTIATE elevator WITH floor_amount
+            ADD new_elevator TO elevator_list
+        ENDFOR
+
+    ENDSEQUENCE
+
+    SEQUENCE elevator_send USING user_request
+
+        SORT IN INCREASING ORDER OF points WITH elevator_list
+
+        SET best_elevator TO the FIRST INDEX OF elevator_list
+
+        CALL add_stop OF best_elevator WITH user_request
+
+    ENDSEQUENCE
+
+    WHEN user IN user_list PRESS btn_up OR btn_down
+        SET btn TO ACTIVE light
+
+        FOR EACH elevator IN elevator_list
+            CALL request_check OF elevator WITH user_request
+        ENDFOR
+
+        CALL elevator_send WITH user_request
+
+ENDDEFINE
+
+SET columm TO INSTANTIATE Columns WITH floor_amount and elevator_per_column
