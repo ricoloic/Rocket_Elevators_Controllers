@@ -18,6 +18,6 @@
 
 > - the parenthesis, the brackets and the curly brackets could also used a little highlight
 
-> #### Small remark about the keyword NOT, it only gets highlighted when it is placed in front of the keyword equal
+> #### Small remark about the keyword NOT, it only gets highlighted when it is placed in front of the keyword EQUAL
 
 If I think of anything else I'll be updating this file
