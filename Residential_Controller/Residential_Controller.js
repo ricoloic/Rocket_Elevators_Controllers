@@ -1,9 +1,10 @@
 function return_positive(n) {
-    if (n < 0) {
-        n *= -1
+    let N = n
+    if (N < 0) {
+        N *= -1
     }
 
-    return n;
+    return N;
 };
 
 class Elevator {
@@ -102,8 +103,8 @@ class Elevator {
 
     points_update (RequestFloor, Direction) {
         let difference_last_stop = 0
-        if (this.status == "IDLE") {
-            let dif_last_stop = this.stop_list[this.stop_list.length] - RequestFloor
+        if (this.status != "IDLE") {
+            let dif_last_stop = this.stop_list[this.stop_list.length - 1] - RequestFloor
             difference_last_stop = return_positive(dif_last_stop)
         }
 
@@ -114,7 +115,7 @@ class Elevator {
 
         this.points = 0
 
-        if (this.current_direction == Direction && this.status == "IDLE") {
+        if (this.current_direction == Direction && this.status != "IDLE") {
             if (RequestFloor >= this.current_floor && Direction == "up" || RequestFloor <= this.current_floor && Direction == "down") {
                 this.points = difference_floor
                 this.points += this.stop_list.length
@@ -128,7 +129,7 @@ class Elevator {
             this.points = max_floor_difference
             this.points += difference_floor
 
-        } else if (this.current_direction == Direction && this.status == "IDLE") {
+        } else if (this.current_direction != Direction && this.status != "IDLE") {
             this.points = max_floor_difference * 2
             this.points += difference_last_stop + this.stop_list.length
         }
@@ -180,6 +181,7 @@ class Elevator {
     }
 
     run () {
+        console.log("running elevator : " + this.ID)
         while (this.stop_list.length != 0) {
             if (this.stop_list.length != 0) {
                 while (this.current_floor != this.stop_list[0]) {
@@ -238,7 +240,11 @@ class Column {
             this.elevator_list[i].points_update(RequestFloor, Direction)
         }
 
-        let best_elevator = this.elevator_list.reduce((prev, current) => (prev.points > current.points) ? prev : current)
+        this.elevator_list.sort(function(a, b) {
+            return parseFloat(a.points) - parseFloat(b.points);
+        })
+
+        let best_elevator = this.elevator_list[0]
         console.log("sending elevator " + best_elevator.ID + "\n...")
         best_elevator.add_stop(RequestFloor, Direction)
         best_elevator.run()
@@ -262,7 +268,7 @@ class Column {
 }
 
 // test
-let col = new Column(Elevator, 10, 2)
+var col = new Column(Elevator, 10, 2)
 
 // column.change_value(elevator, current_floor, stop_list, down_buffer, up_buffer, current_direction, status)
 
@@ -270,7 +276,7 @@ let col = new Column(Elevator, 10, 2)
 /* col.change_value(0, 9, [7, 6, 5, 3], [], [4, 10], "down", "MOVING")
 col.change_value(1, 5, [6, 8, 10], [7, 3], [2, 5], "up", "MOVING")
 
-elevator = col.RequestElevator(4, "down")
+let elevator = col.RequestElevator(4, "down")
 col.RequestFloor(elevator, 10) */
 
 
@@ -278,15 +284,15 @@ col.RequestFloor(elevator, 10) */
 /* col.change_value(0, 2, [], [], [], "stop", "IDLE")
 col.change_value(1, 6, [], [], [], "stop", "IDLE")
 
-elevator = col.RequestElevator(3, "up")
+let elevator = col.RequestElevator(3, "up")
 col.RequestFloor(elevator, 7) */
 
 
 // Scenario 2
-/* col.change_value(0, 10, [], [], [], "stop", "IDLE")
+col.change_value(0, 10, [], [], [], "stop", "IDLE")
 col.change_value(1, 3, [], [], [], "stop", "IDLE")
 
-elevator = col.RequestElevator(1, "up")
+let elevator = col.RequestElevator(1, "up")
 col.RequestFloor(elevator, 6)
 
 elevator = col.RequestElevator(3, "up")
@@ -295,15 +301,15 @@ col.RequestFloor(elevator, 5)
 elevator = col.RequestElevator(9, "down")
 col.RequestFloor(elevator, 2)
 
-let elevator = col.RequestElevator(4, "down")
-col.RequestFloor(elevator, 10) */
+elevator = col.RequestElevator(4, "down")
+col.RequestFloor(elevator, 10)
 
 
 // Scenario 3
 /* col.change_value(0, 10, [], [], [], "stop", "IDLE")
 col.change_value(1, 3, [6], [], [], "up", "MOVING")
 
-elevator = col.RequestElevator(3, "down")
+let elevator = col.RequestElevator(3, "down")
 col.RequestFloor(elevator, 2)
 
 for (let i = 0; i < col.elevator_list.length; i++) {

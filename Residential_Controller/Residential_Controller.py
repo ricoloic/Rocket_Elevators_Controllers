@@ -175,7 +175,7 @@ class Elevator:
 
 
     def run(self):
-        print("runing elevator :", self.ID)
+        print("running elevator :", self.ID)
         while len(self.stop_list) != 0:
             if len(self.stop_list) != 0:
                 while self.current_floor != self.stop_list[0]:
@@ -271,7 +271,7 @@ elevator = col.RequestElevator(3, "up")
 col.RequestFloor(elevator, 7) """
 
 # Scenario 2
-""" col.change_value(0, 10, [], [], [], "stop", "IDLE")
+col.change_value(0, 10, [], [], [], "stop", "IDLE")
 col.change_value(1, 3, [], [], [], "stop", "IDLE")
 
 elevator = col.RequestElevator(1, "up")
@@ -281,7 +281,7 @@ elevator = col.RequestElevator(3, "up")
 col.RequestFloor(elevator, 5)
 
 elevator = col.RequestElevator(9, "down")
-col.RequestFloor(elevator, 2) """
+col.RequestFloor(elevator, 2)
 
 # Scenario 3
 """ col.change_value(0, 10, [], [], [], "stop", "IDLE")
