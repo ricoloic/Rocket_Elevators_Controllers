@@ -219,7 +219,6 @@ class Column:
 
 
     def requestElevator(self, requestedFloor, direction):
-        wait(1)
         print("user request from floor", requestedFloor)
         wait(1)
 
@@ -297,8 +296,8 @@ def customScenario ():
     elevator = col.requestElevator(4, "down")
     col.requestFloor(elevator, 10)
 
-scenario1()
-# scenario2()
+# scenario1()
+scenario2()
 # scenario3()
 
 # customScenario()

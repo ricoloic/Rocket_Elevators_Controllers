@@ -321,9 +321,9 @@ function customScenario () {
     col.requestFloor(elevator, 10)
 }
 
-scenario1()
+// scenario1()
 // scenario2()
-// scenario3()
+scenario3()
 
 // customScenario()
 
