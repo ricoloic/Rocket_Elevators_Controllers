@@ -60,67 +60,67 @@ class Elevator {
         }
     }
 
-    send_request (RequestedFloor) {
-        if (this.check_in(RequestedFloor)) {
-            this.stop_list.push(RequestedFloor)
+    send_request (requestedFloor) {
+        if (this.check_in(requestedFloor)) {
+            this.stop_list.push(requestedFloor)
 
-            if (this.current_floor > RequestedFloor) {
+            if (this.current_floor > requestedFloor) {
                 this.status = "MOVING"
                 this.current_direction = "down"
             }
 
-            else if (this.current_floor < RequestedFloor) {
+            else if (this.current_floor < requestedFloor) {
                 this.status = "MOVING"
                 this.current_direction = "up"
             }
 
             this.list_sorting()
-            console.log("requested floor " + RequestedFloor + "\n...")
+            console.log("requested floor " + requestedFloor + "\n...")
         }
     }
 
-    add_stop (RequestFloor, Direction) {
-        if (this.check_in(RequestFloor)) {
-            if (Direction == this.current_direction && Direction == "up" && RequestFloor >= this.current_floor) {
-                this.stop_list.push(RequestFloor)
+    add_stop (requestFloor, direction) {
+        if (this.check_in(requestFloor)) {
+            if (direction == this.current_direction && direction == "up" && requestFloor >= this.current_floor) {
+                this.stop_list.push(requestFloor)
 
-            } else if (Direction == this.current_direction && Direction == "down" && RequestFloor <= this.current_floor) {
-                this.stop_list.push(RequestFloor)
+            } else if (direction == this.current_direction && direction == "down" && requestFloor <= this.current_floor) {
+                this.stop_list.push(requestFloor)
 
             } else if (this.status == "IDLE") {
-                this.stop_list.push(RequestFloor)
+                this.stop_list.push(requestFloor)
 
-            } else if (Direction == "up") {
-                this.up_buffer.push(RequestFloor)
+            } else if (direction == "up") {
+                this.up_buffer.push(requestFloor)
 
-            } else if (Direction == "down") {
-                this.down_buffer.push(RequestFloor)
+            } else if (direction == "down") {
+                this.down_buffer.push(requestFloor)
             }
 
             this.list_sorting()
         }
     }
 
-    points_update (RequestFloor, Direction) {
+    points_update (requestFloor, direction) {
         let difference_last_stop = 0
         if (this.status != "IDLE") {
-            let dif_last_stop = this.stop_list[this.stop_list.length - 1] - RequestFloor
+            let dif_last_stop = this.stop_list[this.stop_list.length - 1] - requestFloor
             difference_last_stop = return_positive(dif_last_stop)
         }
 
         let max_floor_difference = this.floor_amount + 1
 
-        let dif_floor = this.current_floor - RequestFloor
+        let dif_floor = this.current_floor - requestFloor
         let difference_floor = return_positive(dif_floor)
 
         this.points = 0
 
-        if (this.current_direction == Direction && this.status != "IDLE") {
-            if (RequestFloor >= this.current_floor && Direction == "up" || RequestFloor <= this.current_floor && Direction == "down") {
+        if (this.current_direction == direction && this.status != "IDLE") {
+            if (requestFloor >= this.current_floor && direction == "up" || requestFloor <= this.current_floor && direction == "down") {
                 this.points = difference_floor
                 this.points += this.stop_list.length
 
-            } else if (RequestFloor < this.current_floor && Direction == "up" || RequestFloor > this.current_floor && Direction == "down") {
+            } else if (requestFloor < this.current_floor && direction == "up" || requestFloor > this.current_floor && direction == "down") {
                 this.points = max_floor_difference
                 this.points  += difference_last_stop + this.stop_list.length
             }
@@ -129,7 +129,7 @@ class Elevator {
             this.points = max_floor_difference
             this.points += difference_floor
 
-        } else if (this.current_direction != Direction && this.status != "IDLE") {
+        } else if (this.current_direction != direction && this.status != "IDLE") {
             this.points = max_floor_difference * 2
             this.points += difference_last_stop + this.stop_list.length
         }
@@ -233,11 +233,11 @@ class Column {
         }
     }
 
-    RequestElevator (RequestFloor, Direction) {
-        console.log("user request from floor " + RequestFloor + "\n...")
+    requestElevator (requestFloor, direction) {
+        console.log("user request from floor " + requestFloor + "\n...")
 
         for (let i = 0; i < this.elevator_list.length; i++) {
-            this.elevator_list[i].points_update(RequestFloor, Direction)
+            this.elevator_list[i].points_update(requestFloor, direction)
         }
 
         this.elevator_list.sort(function(a, b) {
@@ -245,14 +245,14 @@ class Column {
         })
 
         let best_elevator = this.elevator_list[0]
-        console.log("sending elevator " + best_elevator.ID + "\n...")
-        best_elevator.add_stop(RequestFloor, Direction)
+        console.log("SENDING ELEVATOR " + best_elevator.ID + "\n...")
+        best_elevator.add_stop(requestFloor, direction)
         best_elevator.run()
         return best_elevator;
     }
 
-    RequestFloor (Elevator, RequestedFloor) {
-        Elevator.send_request(RequestedFloor)
+    requestFloor (Elevator, requestedFloor) {
+        Elevator.send_request(requestedFloor)
         Elevator.run()
     }
 
@@ -272,53 +272,60 @@ var col = new Column(Elevator, 10, 2)
 
 // column.change_value(elevator, current_floor, stop_list, down_buffer, up_buffer, current_direction, status)
 
-// Scenario Custom
-/* col.change_value(0, 9, [7, 6, 5, 3], [], [4, 10], "down", "MOVING")
-col.change_value(1, 5, [6, 8, 10], [7, 3], [2, 5], "up", "MOVING")
-
-let elevator = col.RequestElevator(4, "down")
-col.RequestFloor(elevator, 10) */
-
-
-// Scenario 1
-/* col.change_value(0, 2, [], [], [], "stop", "IDLE")
-col.change_value(1, 6, [], [], [], "stop", "IDLE")
-
-let elevator = col.RequestElevator(3, "up")
-col.RequestFloor(elevator, 7) */
-
-
-// Scenario 2
-col.change_value(0, 10, [], [], [], "stop", "IDLE")
-col.change_value(1, 3, [], [], [], "stop", "IDLE")
-
-let elevator = col.RequestElevator(1, "up")
-col.RequestFloor(elevator, 6)
-
-elevator = col.RequestElevator(3, "up")
-col.RequestFloor(elevator, 5)
-
-elevator = col.RequestElevator(9, "down")
-col.RequestFloor(elevator, 2)
-
-elevator = col.RequestElevator(4, "down")
-col.RequestFloor(elevator, 10)
-
-
-// Scenario 3
-/* col.change_value(0, 10, [], [], [], "stop", "IDLE")
-col.change_value(1, 3, [6], [], [], "up", "MOVING")
-
-let elevator = col.RequestElevator(3, "down")
-col.RequestFloor(elevator, 2)
-
-for (let i = 0; i < col.elevator_list.length; i++) {
-    col.elevator_list[i].list_sorting()
-    col.elevator_list[i].run()
+function scenario1 () {
+    col.change_value(0, 2, [], [], [], "stop", "IDLE")
+    col.change_value(1, 6, [], [], [], "stop", "IDLE")
+    
+    let elevator = col.requestElevator(3, "up")
+    col.requestFloor(elevator, 7)
 }
 
-elevator = col.RequestElevator(10, "down")
-col.RequestFloor(elevator, 3) */
+function scenario2 () {
+    col.change_value(0, 10, [], [], [], "stop", "IDLE")
+    col.change_value(1, 3, [], [], [], "stop", "IDLE")
+
+    let elevator = col.requestElevator(1, "up")
+    col.requestFloor(elevator, 6)
+
+    elevator = col.requestElevator(3, "up")
+    col.requestFloor(elevator, 5)
+
+    elevator = col.requestElevator(9, "down")
+    col.requestFloor(elevator, 2)
+
+    elevator = col.requestElevator(4, "down")
+    col.requestFloor(elevator, 10)
+}
+
+function scenario3 () {
+    col.change_value(0, 10, [], [], [], "stop", "IDLE")
+    col.change_value(1, 3, [6], [], [], "up", "MOVING")
+
+    let elevator = col.requestElevator(3, "down")
+    col.requestFloor(elevator, 2)
+
+    for (let i = 0; i < col.elevator_list.length; i++) {
+        col.elevator_list[i].list_sorting()
+        col.elevator_list[i].run()
+    }
+
+    elevator = col.requestElevator(10, "down")
+    col.requestFloor(elevator, 3)
+}
+
+function customScenario () {
+    col.change_value(0, 9, [7, 6, 5, 3], [], [4, 10], "down", "MOVING")
+    col.change_value(1, 5, [6, 8, 10], [7, 3], [2, 5], "up", "MOVING")
+
+    let elevator = col.requestElevator(4, "down")
+    col.requestFloor(elevator, 10)
+}
+
+scenario1()
+// scenario2()
+// scenario3()
+
+// customScenario()
 
 for (let i = 0; i < col.elevator_list.length; i++) {
     col.elevator_list[i].list_sorting()

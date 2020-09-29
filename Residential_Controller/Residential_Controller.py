@@ -8,7 +8,7 @@ def return_positive(n):
     return n
 
 def wait(t):
-    t = 0.1
+    # t = 0.1
     print("...")
     time.sleep(t)
 
@@ -68,62 +68,62 @@ class Elevator:
             self.stop_list.sort()
 
 
-    def send_request(self, RequestedFloor):
-        if self.check_in(RequestedFloor):
-            self.stop_list.append(RequestedFloor)
+    def send_request(self, requestedFloor):
+        if self.check_in(requestedFloor):
+            self.stop_list.append(requestedFloor)
 
-            if self.current_floor > RequestedFloor:
+            if self.current_floor > requestedFloor:
                 self.status = "MOVING"
                 self.current_direction = "down"
             
-            elif self.current_floor < RequestedFloor:
+            elif self.current_floor < requestedFloor:
                 self.status = "MOVING"
                 self.current_direction = "up"
 
             self.list_sorting()
-            print("requested floor", RequestedFloor)
+            print("requested floor", requestedFloor)
             wait(1)
 
 
-    def add_stop(self, RequestFloor, Direction):
-        if self.check_in(RequestFloor):
-            if Direction == self.current_direction and Direction == "up" and RequestFloor >= self.current_floor:
-                self.stop_list.append(RequestFloor)
+    def add_stop(self, requestFloor, direction):
+        if self.check_in(requestFloor):
+            if direction == self.current_direction and direction == "up" and requestFloor >= self.current_floor:
+                self.stop_list.append(requestFloor)
 
-            elif Direction == self.current_direction and Direction == "down" and RequestFloor <= self.current_floor:
-                self.stop_list.append(RequestFloor)
+            elif direction == self.current_direction and direction == "down" and requestFloor <= self.current_floor:
+                self.stop_list.append(requestFloor)
 
             elif self.status == "IDLE":
-                self.stop_list.append(RequestFloor)
+                self.stop_list.append(requestFloor)
 
-            elif Direction == "up":
-                self.up_buffer.append(RequestFloor)
+            elif direction == "up":
+                self.up_buffer.append(requestFloor)
 
-            elif Direction == "down":
-                self.down_buffer.append(RequestFloor)
+            elif direction == "down":
+                self.down_buffer.append(requestFloor)
 
             self.list_sorting()
 
 
-    def points_update(self, RequestFloor, Direction):
+    def points_update(self, requestFloor, direction):
         difference_last_stop = 0
         if self.status != "IDLE":
-            dif_last_stop = self.stop_list[-1] - RequestFloor
+            dif_last_stop = self.stop_list[-1] - requestFloor
             difference_last_stop = return_positive(dif_last_stop)
 
         max_floor_difference = self.floor_amount + 1
 
-        dif_floor = self.current_floor - RequestFloor
+        dif_floor = self.current_floor - requestFloor
         difference_floor = return_positive(dif_floor)
 
         self.points = 0
 
-        if self.current_direction == Direction and self.status != "IDLE":
-            if RequestFloor >= self.current_floor and Direction == "up" or RequestFloor <= self.current_floor and Direction == "down":
+        if self.current_direction == direction and self.status != "IDLE":
+            if requestFloor >= self.current_floor and direction == "up" or requestFloor <= self.current_floor and direction == "down":
                 self.points = difference_floor
                 self.points += len(self.stop_list)
             
-            elif RequestFloor < self.current_floor and Direction == "up" or RequestFloor > self.current_floor and Direction == "down":
+            elif requestFloor < self.current_floor and direction == "up" or requestFloor > self.current_floor and direction == "down":
                 self.points = max_floor_difference
                 self.points += difference_last_stop + len(self.stop_list)
 
@@ -131,7 +131,7 @@ class Elevator:
             self.points = max_floor_difference
             self.points += difference_floor
 
-        elif self.current_direction != Direction and self.status != "IDLE":
+        elif self.current_direction != direction and self.status != "IDLE":
             self.points = max_floor_difference * 2
             self.points += difference_last_stop + len(self.stop_list)
 
@@ -218,26 +218,26 @@ class Column:
             self.elevator_list.append(e)
 
 
-    def RequestElevator(self, RequestedFloor, Direction):
+    def requestElevator(self, requestedFloor, direction):
         wait(1)
-        print("user request from floor", RequestedFloor)
+        print("user request from floor", requestedFloor)
         wait(1)
 
         j = 0
         for i in self.elevator_list:
-            self.elevator_list[j].points_update(RequestedFloor, Direction)
+            self.elevator_list[j].points_update(requestedFloor, direction)
             j += 1
 
         best_elevator = min(self.elevator_list, key = attrgetter('points'))
-        print("sending elevator", best_elevator.ID)
-        best_elevator.add_stop(RequestedFloor, Direction)
+        print("SENDING ELEVATOR", best_elevator.ID)
+        best_elevator.add_stop(requestedFloor, direction)
         wait(1)
         best_elevator.run()
         return best_elevator
 
 
-    def RequestFloor(self, Elevator, RequestedFloor):
-        Elevator.send_request(RequestedFloor)
+    def requestFloor(self, Elevator, requestedFloor):
+        Elevator.send_request(requestedFloor)
         Elevator.run()
 
     
@@ -256,47 +256,52 @@ col = Column(Elevator, 10, 2)
 
 # column.change_value(elevator, current_floor, stop_list, down_buffer, up_buffer, current_direction, status)
 
-# Scenario Custom
-""" col.change_value(0, 9, [7, 6, 5, 3], [], [4, 10], "down", "MOVING")
-col.change_value(1, 5, [6, 8, 10], [7, 3], [2, 5], "up", "MOVING")
+def scenario1 ():
+    col.change_value(0, 2, [], [], [], "stop", "IDLE")
+    col.change_value(1, 6, [], [], [], "stop", "IDLE")
 
-elevator = col.RequestElevator(4, "down")
-col.RequestFloor(elevator, 10) """
+    elevator = col.requestElevator(3, "up")
+    col.requestFloor(elevator, 7)
 
-# Scenario 1
-""" col.change_value(0, 2, [], [], [], "stop", "IDLE")
-col.change_value(1, 6, [], [], [], "stop", "IDLE")
+def scenario2 ():
+    col.change_value(0, 10, [], [], [], "stop", "IDLE")
+    col.change_value(1, 3, [], [], [], "stop", "IDLE")
 
-elevator = col.RequestElevator(3, "up")
-col.RequestFloor(elevator, 7) """
+    elevator = col.requestElevator(1, "up")
+    col.requestFloor(elevator, 6)
 
-# Scenario 2
-col.change_value(0, 10, [], [], [], "stop", "IDLE")
-col.change_value(1, 3, [], [], [], "stop", "IDLE")
+    elevator = col.requestElevator(3, "up")
+    col.requestFloor(elevator, 5)
 
-elevator = col.RequestElevator(1, "up")
-col.RequestFloor(elevator, 6)
+    elevator = col.requestElevator(9, "down")
+    col.requestFloor(elevator, 2)
 
-elevator = col.RequestElevator(3, "up")
-col.RequestFloor(elevator, 5)
+def scenario3 ():
+    col.change_value(0, 10, [], [], [], "stop", "IDLE")
+    col.change_value(1, 3, [6], [], [], "up", "MOVING")
 
-elevator = col.RequestElevator(9, "down")
-col.RequestFloor(elevator, 2)
+    elevator = col.requestElevator(3, "down")
+    col.requestFloor(elevator, 2)
 
-# Scenario 3
-""" col.change_value(0, 10, [], [], [], "stop", "IDLE")
-col.change_value(1, 3, [6], [], [], "up", "MOVING")
+    for elevator in col.elevator_list:
+        elevator.list_sorting()
+        elevator.run()
 
-elevator = col.RequestElevator(3, "down")
-col.RequestFloor(elevator, 2)
+    elevator = col.requestElevator(10, "down")
+    col.requestFloor(elevator, 3)
 
-for elevator in col.elevator_list:
-    elevator.list_sorting()
-    elevator.run()
+def customScenario ():
+    col.change_value(0, 9, [7, 6, 5, 3], [], [4, 10], "down", "MOVING")
+    col.change_value(1, 5, [6, 8, 10], [7, 3], [2, 5], "up", "MOVING")
 
-elevator = col.RequestElevator(10, "down")
-col.RequestFloor(elevator, 3) """
+    elevator = col.requestElevator(4, "down")
+    col.requestFloor(elevator, 10)
 
+scenario1()
+# scenario2()
+# scenario3()
+
+# customScenario()
 
 for elevator in col.elevator_list:
     elevator.list_sorting()
