@@ -216,7 +216,7 @@ class Elevator
                 end
 
                 if @stop_list[0] == @current_floor
-                    print "elevator #{@ID} arrived at floor #{@stop_list[0]}"
+                    print "elevator #{@ID} arrived at floor #{@stop_list[0]} \n"
                     self.door_state
                     @stop_list.delete_at(0)
                 end
@@ -266,7 +266,7 @@ class Column
             @elevator_list[i].points_update requestedFloor, direction
         end
         
-        bubble_sort(@elevator_list, points)
+        bubble_sort(@elevator_list)
         best_elevator = @elevator_list[0]
 
         puts "SENDING ELEVATOR #{best_elevator.ID} \n..."
@@ -331,7 +331,7 @@ def scenario3(col)
 end
 
 # scenario1(col)
-# scenario2(col)
+scenario2(col)
 # scenario3(col)
 
 col.runAll
