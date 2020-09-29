@@ -254,12 +254,49 @@ class Column:
 # test
 col = Column(Elevator, 10, 2)
 
-# elevator, current_floor, stop_list, down_buffer, up_buffer, current_direction, status
-col.change_value(0, 9, [7, 6, 5, 3], [], [4, 10], "down", "MOVING")
+# column.change_value(elevator, current_floor, stop_list, down_buffer, up_buffer, current_direction, status)
+
+# Scenario Custom
+""" col.change_value(0, 9, [7, 6, 5, 3], [], [4, 10], "down", "MOVING")
 col.change_value(1, 5, [6, 8, 10], [7, 3], [2, 5], "up", "MOVING")
 
 elevator = col.RequestElevator(4, "down")
-col.RequestFloor(elevator, 10)
+col.RequestFloor(elevator, 10) """
+
+# Scenario 1
+""" col.change_value(0, 2, [], [], [], "stop", "IDLE")
+col.change_value(1, 6, [], [], [], "stop", "IDLE")
+
+elevator = col.RequestElevator(3, "up")
+col.RequestFloor(elevator, 7) """
+
+# Scenario 2
+""" col.change_value(0, 10, [], [], [], "stop", "IDLE")
+col.change_value(1, 3, [], [], [], "stop", "IDLE")
+
+elevator = col.RequestElevator(1, "up")
+col.RequestFloor(elevator, 6)
+
+elevator = col.RequestElevator(3, "up")
+col.RequestFloor(elevator, 5)
+
+elevator = col.RequestElevator(9, "down")
+col.RequestFloor(elevator, 2) """
+
+# Scenario 3
+""" col.change_value(0, 10, [], [], [], "stop", "IDLE")
+col.change_value(1, 3, [6], [], [], "up", "MOVING")
+
+elevator = col.RequestElevator(3, "down")
+col.RequestFloor(elevator, 2)
+
+for elevator in col.elevator_list:
+    elevator.list_sorting()
+    elevator.run()
+
+elevator = col.RequestElevator(10, "down")
+col.RequestFloor(elevator, 3) """
+
 
 for elevator in col.elevator_list:
     elevator.list_sorting()
