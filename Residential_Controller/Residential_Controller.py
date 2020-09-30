@@ -1,299 +1,330 @@
 from operator import attrgetter
 import time
 
-def return_positive(n):
+def returnPositive(n):
     if n < 0:
         n *= -1
 
     return n
 
 def wait(t):
-    # t = 0.1
-    print("...")
+    t = 0.1
     time.sleep(t)
 
 
-class Elevator:
-    def __init__(self, _id, _floor_amount):
+class Printer:
+    def doorStage(self):
+        print("The Door Are Open")
+        wait(3)
+        print("The Door Are Closed")
+        print("\n")
+
+    
+    def floorRequest(self, requestedFloor):
+            print("...")
+            wait(1)
+            print("Floor Requested :{}\n".format(requestedFloor))
+
+
+    def changingDirection(self):
+        print(" Elevator {} is changing direction".format(self.ID))
+
+
+    def requestedUser(self, requestedFloor, direction):
+        print("...")
+        wait(2)
+        print("Request from Floor {} And Going {}\n".format(requestedFloor, direction))
+
+
+    def elevatorChosen(self, bestElevator):
+        print("Elevator {} is sent")
+
+
+    def pointingStage(self):
+        for i in range(len(self.elevatorList)):
+            print("Elevator {} has {} Points".format(self.elevatorList[i].ID, self.elevatorList[i].points))
+        print("\n")
+
+
+    def stage(self):
+        print("Elevator {} has the Direction of {} and the Status of {}. He's at Floor {}.".format(self.ID, self.currentDirection, self.status, self.currentFloor))
+
+
+
+class Elevator(Printer):
+    def __init__(self, _id, _floorAmount):
         self.ID = _id + 1
-        self.floor_amount = _floor_amount
+        self.floorAmount = _floorAmount
         self.btn = []
         self.points = 0
-        self.stop_list = []
-        self.up_buffer = []
-        self.down_buffer =  []
-        self.current_direction = None
-        self.previous_direction = None
-        self.current_floor = 0
-        self.previous_floor = 0
+        self.StopList = []
+        self.UpBuffer = []
+        self.DownBuffer =  []
+        self.currentDirection = None
+        self.previousDirection = None
+        self.currentFloor = 0
+        self.previousFloor = 0
         self.door = "closed"    # false = closed / true = open
         self.status = "IDLE"    # IDLE / maintenance / moving
 
-        for i in range(self.floor_amount):
+        for i in range(self.floorAmount):
             self.btn.append(i + 1)
 
 
-    def door_state(self):
-        """ self.door = "open"
-        print("the doors are", self.door)
-        wait(5)
-
+    def doorState(self):
+        self.door = "open"
         self.door = "closed"
-        print("the doors are", self.door)
-        wait(1) """
-        print("the doors are OPEN then closed")
-        wait(0)
+        self.doorStage()
 
 
+    def checkIn(self, n):
+        inList = True
 
-    def check_in(self, n):
-        in_list = True
-
-        for i in range(len(self.stop_list)):
-            if n == self.stop_list[i]:
-                in_list = False
-
-        return in_list
-    
+        for i in range(len(self.StopList)):
+            if n == self.StopList[i]:
+                inList = False
+        return inList
 
 
-    def list_sorting(self):
-        if self.current_direction == "up":
-            self.stop_list.sort()
+    def listSorting(self):
+        if self.currentDirection == "Up":
+            self.StopList.sort()
 
-        elif self.current_direction == "down":
-            self.stop_list.sort(reverse = True)
+        elif self.currentDirection == "Down":
+            self.StopList.sort(reverse = True)
 
         else:
-            self.stop_list.sort()
+            self.StopList.sort()
 
 
-    def send_request(self, requestedFloor):
-        if self.check_in(requestedFloor):
-            self.stop_list.append(requestedFloor)
+    def sendRequest(self, requestedFloor):
+        if self.checkIn(requestedFloor):
+            self.StopList.append(requestedFloor)
 
-            if self.current_floor > requestedFloor:
+            if self.currentFloor > requestedFloor:
                 self.status = "MOVING"
-                self.current_direction = "down"
+                self.currentDirection = "Down"
             
-            elif self.current_floor < requestedFloor:
+            elif self.currentFloor < requestedFloor:
                 self.status = "MOVING"
-                self.current_direction = "up"
+                self.currentDirection = "Up"
 
-            self.list_sorting()
-            print("requested floor", requestedFloor)
-            wait(1)
+            self.listSorting()
+            self.floorRequest(requestedFloor)
 
 
-    def add_stop(self, requestFloor, direction):
-        if self.check_in(requestFloor):
-            if direction == self.current_direction and direction == "up" and requestFloor >= self.current_floor:
-                self.stop_list.append(requestFloor)
 
-            elif direction == self.current_direction and direction == "down" and requestFloor <= self.current_floor:
-                self.stop_list.append(requestFloor)
+    def addStop(self, requestFloor, direction):
+        if self.checkIn(requestFloor):
+            if direction == self.currentDirection and direction == "Up" and requestFloor >= self.currentFloor:
+                self.StopList.append(requestFloor)
+
+            elif direction == self.currentDirection and direction == "Down" and requestFloor <= self.currentFloor:
+                self.StopList.append(requestFloor)
 
             elif self.status == "IDLE":
-                self.stop_list.append(requestFloor)
+                self.StopList.append(requestFloor)
 
-            elif direction == "up":
-                self.up_buffer.append(requestFloor)
+            elif direction == "Up":
+                self.UpBuffer.append(requestFloor)
 
-            elif direction == "down":
-                self.down_buffer.append(requestFloor)
+            elif direction == "Down":
+                self.DownBuffer.append(requestFloor)
 
-            self.list_sorting()
+            self.listSorting()
 
 
-    def points_update(self, requestFloor, direction):
-        difference_last_stop = 0
+    def pointsUpdate(self, requestFloor, direction):
+        differenceLastStop = 0
         if self.status != "IDLE":
-            dif_last_stop = self.stop_list[-1] - requestFloor
-            difference_last_stop = return_positive(dif_last_stop)
+            difLastStop = self.StopList[-1] - requestFloor
+            differenceLastStop = returnPositive(difLastStop)
 
-        max_floor_difference = self.floor_amount + 1
+        maxFloorDifference = self.floorAmount + 1
 
-        dif_floor = self.current_floor - requestFloor
-        difference_floor = return_positive(dif_floor)
+        difFloor = self.currentFloor - requestFloor
+        differenceFloor = returnPositive(difFloor)
 
         self.points = 0
 
-        if self.current_direction == direction and self.status != "IDLE":
-            if requestFloor >= self.current_floor and direction == "up" or requestFloor <= self.current_floor and direction == "down":
-                self.points = difference_floor
-                self.points += len(self.stop_list)
+        if self.currentDirection == direction and self.status != "IDLE":
+            if requestFloor >= self.currentFloor and direction == "Up" or requestFloor <= self.currentFloor and direction == "Down":
+                self.points = differenceFloor
+                self.points += len(self.StopList)
             
-            elif requestFloor < self.current_floor and direction == "up" or requestFloor > self.current_floor and direction == "down":
-                self.points = max_floor_difference
-                self.points += difference_last_stop + len(self.stop_list)
+            elif requestFloor < self.currentFloor and direction == "Up" or requestFloor > self.currentFloor and direction == "Down":
+                self.points = maxFloorDifference
+                self.points += differenceLastStop + len(self.StopList)
 
         elif self.status == "IDLE":
-            self.points = max_floor_difference
-            self.points += difference_floor
+            self.points = maxFloorDifference
+            self.points += differenceFloor
 
-        elif self.current_direction != direction and self.status != "IDLE":
-            self.points = max_floor_difference * 2
-            self.points += difference_last_stop + len(self.stop_list)
+        elif self.currentDirection != direction and self.status != "IDLE":
+            self.points = maxFloorDifference * 2
+            self.points += differenceLastStop + len(self.StopList)
 
 
-    def stop_switch(self):
-        if len(self.down_buffer) != 0 and len(self.up_buffer) != 0:
-            print("elevator", self.ID, "is changing direction")
-            if self.previous_direction == "up":
-                self.current_direction = "down"
-                for i in self.down_buffer:
-                    self.stop_list.append(i)
-                    del self.down_buffer[0]
+    def StopSwitch(self):
+        if len(self.DownBuffer) != 0 and len(self.UpBuffer) != 0:
+            self.changingDirection()
+            if self.previousDirection == "Up":
+                self.currentDirection = "Down"
+                for i in self.DownBuffer:
+                    self.StopList.append(i)
+                    del self.DownBuffer[0]
             
-            elif self.previous_direction == "down":
-                self.current_direction = "up"
-                for i in self.up_buffer:
-                    self.stop_list.append(i)
-                    del self.up_buffer[0]
+            elif self.previousDirection == "Down":
+                self.currentDirection = "Up"
+                for i in self.UpBuffer:
+                    self.StopList.append(i)
+                    del self.UpBuffer[0]
 
-        elif len(self.down_buffer) != 0 and len(self.up_buffer) == 0:
-            print("elevator", self.ID, "is changing direction")
-            self.current_direction = "down"
-            for i in self.down_buffer:
-                self.stop_list.append(i)
-                del self.down_buffer[0]
+        elif len(self.DownBuffer) != 0 and len(self.UpBuffer) == 0:
+            self.changingDirection()
+            self.currentDirection = "Down"
+            for i in self.DownBuffer:
+                self.StopList.append(i)
+                del self.DownBuffer[0]
 
-        elif len(self.down_buffer) == 0 and len(self.up_buffer) != 0:
-            print("elevator", self.ID, "is changing direction")
-            self.current_direction = "up"
-            for i in self.up_buffer:
-                self.stop_list.append(i)
-                del self.up_buffer[0]
+        elif len(self.DownBuffer) == 0 and len(self.UpBuffer) != 0:
+            self.changingDirection()
+            self.currentDirection = "Up"
+            for i in self.UpBuffer:
+                self.StopList.append(i)
+                del self.UpBuffer[0]
 
-        elif len(self.down_buffer) == 0 and len(self.up_buffer) == 0:
+        elif len(self.DownBuffer) == 0 and len(self.UpBuffer) == 0:
             self.status = "IDLE"
-            self.current_direction = "stop"
+            self.currentDirection = "Stop"
 
-        if len(self.stop_list) != 0:
-            self.list_sorting()
+        if len(self.StopList) != 0:
+            self.listSorting()
             self.run()
 
 
     def run(self):
-        print("running elevator :", self.ID)
-        while len(self.stop_list) != 0:
-            if len(self.stop_list) != 0:
-                while self.current_floor != self.stop_list[0]:
-                    if self.stop_list[0] < self.current_floor:
-                        self.current_direction = "down"
-                        self.previous_direction = self.current_direction
-                        self.current_floor -= 1
+        while len(self.StopList) != 0:
+            if len(self.StopList) != 0:
+                while self.currentFloor != self.StopList[0]:
+                    if self.StopList[0] < self.currentFloor:
+                        self.currentDirection = "Down"
+                        self.previousDirection = self.currentDirection
+                        self.currentFloor -= 1
                         self.status = "MOVING"
 
-                    elif self.stop_list[0] > self.current_floor:
-                        self.current_direction = "up"
-                        self.previous_direction = self.current_direction
-                        self.current_floor += 1
+                    elif self.StopList[0] > self.currentFloor:
+                        self.currentDirection = "Up"
+                        self.previousDirection = self.currentDirection
+                        self.currentFloor += 1
                         self.status = "MOVING"
                     
-                    if self.current_floor != self.previous_floor:
-                        print("floor :", self.current_floor)
-                        self.previous_floor = self.current_floor
+                    if self.currentFloor != self.previousFloor:
+                        self.stage()
+                        self.previousFloor = self.currentFloor
                 
-                if self.stop_list[0] == self.current_floor:
-                    print("elevator", self.ID, "arrived at floor", self.stop_list[0])
-                    self.door_state()
-                    del self.stop_list[0]
+                if self.StopList[0] == self.currentFloor:
+                    self.doorState()
+                    del self.StopList[0]
 
-            elif len(self.stop_list) == 0:
-                self.stop_switch()
+            elif len(self.StopList) == 0:
+                self.StopSwitch()
 
-        if len(self.stop_list) == 0:
-            self.stop_switch()
+        if len(self.StopList) == 0:
+            self.StopSwitch()
 
 
-class Column:
-    def __init__(self, Elevator, _floor_amount, _elevator_per_col):
-        self.floor_amount = _floor_amount
-        self.elevator_per_col = _elevator_per_col
-        self.elevator_list = []
+    def resetPointing(self):
+        self.points = 0
 
-        for i in range(self.elevator_per_col):
-            e = Elevator(i, self.floor_amount)
-            self.elevator_list.append(e)
+
+
+class Column(Printer):
+    def __init__(self, Elevator, _floorAmount, _elevatorPerColumn):
+        self.floorAmount = _floorAmount
+        self.elevatorPerColumn = _elevatorPerColumn
+        self.elevatorList = []
+
+        for i in range(self.elevatorPerColumn):
+            e = Elevator(i, self.floorAmount)
+            self.elevatorList.append(e)
 
 
     def requestElevator(self, requestedFloor, direction):
-        print("user request from floor", requestedFloor)
-        wait(1)
+        for i in range(len(self.elevatorList)):
+            self.elevatorList[i].pointsUpdate(requestedFloor, direction)
 
-        j = 0
-        for i in self.elevator_list:
-            self.elevator_list[j].points_update(requestedFloor, direction)
-            j += 1
+        bestElevator = min(self.elevatorList, key = attrgetter('points'))
+        self.requestedUser(requestedFloor, direction)
 
-        best_elevator = min(self.elevator_list, key = attrgetter('points'))
-        print("SENDING ELEVATOR", best_elevator.ID)
-        best_elevator.add_stop(requestedFloor, direction)
-        wait(1)
-        best_elevator.run()
-        return best_elevator
+        self.pointingStage()
+        self.elevatorChosen(bestElevator)
+        bestElevator.addStop(requestedFloor, direction)        
+        bestElevator.run()
+        return bestElevator
 
 
     def requestFloor(self, Elevator, requestedFloor):
-        Elevator.send_request(requestedFloor)
+        Elevator.sendRequest(requestedFloor)
         Elevator.run()
 
     
-    def change_value(self, elevator, current_floor, stop_list, down_buffer, up_buffer, current_direction, status):
-        self.elevator_list[elevator].current_floor = current_floor
-        self.elevator_list[elevator].stop_list = stop_list
-        self.elevator_list[elevator].down_buffer = down_buffer
-        self.elevator_list[elevator].up_buffer = up_buffer
-        self.elevator_list[elevator].current_direction = current_direction
-        self.elevator_list[elevator].status = status
-        self.elevator_list[elevator].list_sorting()
-        
+    def changeValue(self, elevator, currentFloor, StopList, DownBuffer, UpBuffer, currentDirection, status):
+        self.elevatorList[elevator].currentFloor = currentFloor
+        self.elevatorList[elevator].StopList = StopList
+        self.elevatorList[elevator].DownBuffer = DownBuffer
+        self.elevatorList[elevator].UpBuffer = UpBuffer
+        self.elevatorList[elevator].currentDirection = currentDirection
+        self.elevatorList[elevator].status = status
+        self.elevatorList[elevator].listSorting()
+
+
+
 
 # test
 col = Column(Elevator, 10, 2)
 
-# column.change_value(elevator, current_floor, stop_list, down_buffer, up_buffer, current_direction, status)
+# column.changeValue(elevator, currentFloor, StopList, DownBuffer, UpBuffer, currentDirection, status)
 
 def scenario1 ():
-    col.change_value(0, 2, [], [], [], "stop", "IDLE")
-    col.change_value(1, 6, [], [], [], "stop", "IDLE")
+    col.changeValue(0, 2, [], [], [], "Stop", "IDLE")
+    col.changeValue(1, 6, [], [], [], "Stop", "IDLE")
 
-    elevator = col.requestElevator(3, "up")
+    elevator = col.requestElevator(3, "Up")
     col.requestFloor(elevator, 7)
 
 def scenario2 ():
-    col.change_value(0, 10, [], [], [], "stop", "IDLE")
-    col.change_value(1, 3, [], [], [], "stop", "IDLE")
+    col.changeValue(0, 10, [], [], [], "Stop", "IDLE")
+    col.changeValue(1, 3, [], [], [], "Stop", "IDLE")
 
-    elevator = col.requestElevator(1, "up")
+    elevator = col.requestElevator(1, "Up")
     col.requestFloor(elevator, 6)
 
-    elevator = col.requestElevator(3, "up")
+    elevator = col.requestElevator(3, "Up")
     col.requestFloor(elevator, 5)
 
-    elevator = col.requestElevator(9, "down")
+    elevator = col.requestElevator(9, "Down")
     col.requestFloor(elevator, 2)
 
 def scenario3 ():
-    col.change_value(0, 10, [], [], [], "stop", "IDLE")
-    col.change_value(1, 3, [6], [], [], "up", "MOVING")
+    col.changeValue(0, 10, [], [], [], "Stop", "IDLE")
+    col.changeValue(1, 3, [6], [], [], "Up", "MOVING")
 
-    elevator = col.requestElevator(3, "down")
+    elevator = col.requestElevator(3, "Down")
     col.requestFloor(elevator, 2)
 
-    for elevator in col.elevator_list:
-        elevator.list_sorting()
+    for elevator in col.elevatorList:
+        elevator.listSorting()
         elevator.run()
 
-    elevator = col.requestElevator(10, "down")
+    elevator = col.requestElevator(10, "Down")
     col.requestFloor(elevator, 3)
 
 def customScenario ():
-    col.change_value(0, 9, [7, 6, 5, 3], [], [4, 10], "down", "MOVING")
-    col.change_value(1, 5, [6, 8, 10], [7, 3], [2, 5], "up", "MOVING")
+    col.changeValue(0, 9, [7, 6, 5, 3], [], [4, 10], "Down", "MOVING")
+    col.changeValue(1, 5, [6, 8, 10], [7, 3], [2, 5], "Up", "MOVING")
 
-    elevator = col.requestElevator(4, "down")
+    elevator = col.requestElevator(4, "Down")
     col.requestFloor(elevator, 10)
 
 # scenario1()
@@ -302,6 +333,6 @@ scenario2()
 
 # customScenario()
 
-for elevator in col.elevator_list:
-    elevator.list_sorting()
+for elevator in col.elevatorList:
+    elevator.listSorting()
     elevator.run()

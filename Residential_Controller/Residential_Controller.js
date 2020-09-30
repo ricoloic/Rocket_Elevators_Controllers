@@ -7,7 +7,14 @@ function return_positive(n) {
     return N;
 };
 
-class Elevator {
+class Printer {
+
+
+
+    
+}
+
+class Elevator extends Printer {
     constructor (_id, _floor_amount) {
         this.ID = _id + 1
         this.floor_amount = _floor_amount
@@ -221,7 +228,7 @@ class Elevator {
     }
 }
 
-class Column {
+class Column extends Printer {
     constructor (Elevator, _floor_amount, _elevator_per_col) {
         this.floor_amount = _floor_amount
         this.elevator_per_col = _elevator_per_col

@@ -260,12 +260,12 @@ class Column
     end
 
     def requestElevator(requestedFloor, direction)
-        puts "user request from floor #{requestedFloor} \n...\n"
+        print("Request From LV #{requestedFloor} And Going #{direction}\n")
 
         for i in 0..(@elevator_per_col - 1)
             @elevator_list[i].points_update requestedFloor, direction
         end
-        
+
         bubble_sort(@elevator_list)
         best_elevator = @elevator_list[0]
 
@@ -294,8 +294,8 @@ end
 col = Column.new(10, 2)
 
 def scenario1(col)
-    col.change_value(0, 2, [], [], [], "stop", "IDLE")
-    col.change_value(1, 6, [], [], [], "stop", "IDLE")
+    col.change_value 0, 2, [], [], [], "stop", "IDLE"
+    col.change_value 1, 6, [], [], [], "stop", "IDLE"
 
     elevator = col.requestElevator(3, "up")
     col.requestFloor(elevator, 7)
@@ -330,8 +330,8 @@ def scenario3(col)
     col.requestFloor elevator, 3
 end
 
-# scenario1(col)
-scenario2(col)
+scenario1(col)
+# scenario2(col)
 # scenario3(col)
 
 col.runAll
