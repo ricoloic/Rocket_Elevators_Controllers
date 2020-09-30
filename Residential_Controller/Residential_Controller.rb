@@ -1,4 +1,4 @@
-def return_positive(n)
+def returnPositive(n)
     positive = n
     if positive < 0
         positive *= -1
@@ -6,7 +6,7 @@ def return_positive(n)
     return positive
 end
 
-def bubble_sort(list)
+def bubbleSort(list)
     return list if list.size <= 1 # already sorted
     swapped = true
     while swapped do
@@ -23,287 +23,279 @@ def bubble_sort(list)
 end
 
 class Elevator
-    attr_accessor :points, :ID
-    def initialize(_id, _floor_amount)
+    attr_accessor :points, :ID, :stopList
+    def initialize _id, _floorAmount
         @ID = _id
-        @floor_amount = _floor_amount
+        @floorAmount = _floorAmount
         @btn = []
         @points = 0
-        @stop_list = []
-        @up_buffer = []
-        @down_buffer =  []
-        @current_direction
-        @previous_direction
-        @current_floor = 0
-        @previous_floor = 0
+        @stopList = []
+        @upBuffer = []
+        @downBuffer =  []
+        @currentDirection
+        @previousDirection
+        @currentFloor = 0
+        @previousFloor = 0
         @door = "closed"    # closed / open
         @status = "IDLE"    # IDLE / maintenance / moving
-        @name_list = ["up", "down", "IDLE"]
-        
-        for i in 1..@floor_amount
+        @wordList = ["up", "down", "IDLE"]
+
+        for i in 1..@floorAmount
             @btn.push(i + 1)
         end
     end
-    
-    def door_state
-        puts "the doors are OPEN then closed \n..."
+
+    def doorState
+        print "Elevator #{@ID} has arrived at Floor #{@currentFloor}\n"
+        print "The Door Are Open\nThe Door Are Closed\n\n"
     end
 
-    def check_in(requestedFloor)
-        in_list = true
+    def listSorting
+        if @currentDirection == @wordList[0]
+            @stopList.sort!
 
-        for i in 0..@stop_list.length
-            if requestedFloor == @stop_list[i]
-                in_list = false
-            end
-        end
-        return in_list
-    end
-
-    def list_sorting()
-        if @current_direction == @name_list[0]
-            @stop_list.sort!
-        
-        elsif @current_direction == @name_list[1]
-            @stop_list.sort! {|x, y| y <=> x}
+        elsif @currentDirection == @wordList[1]
+            @stopList.sort! {|x, y| y <=> x}
 
         else
-            @stop_list.sort!
+            @stopList.sort!
         end
     end
 
-    def send_request(requestedFloor)
-        @stop_list.push(requestedFloor)
+    def sendRequest requestedFloor
+        @stopList.push(requestedFloor)
 
-        if @current_floor > requestedFloor
+        if @currentFloor > requestedFloor
             @status = "MOVING"
-            @current_direction = "down"
+            @currentDirection = "down"
         
-        elsif @current_floor < requestedFloor
+        elsif @currentFloor < requestedFloor
             @status = "MOVING"
-            @current_direction = "up"
+            @currentDirection = "up"
         end
 
-        self.list_sorting
-        puts "requested floor #{requestedFloor} \n..."
+        @listSorting
+        print "...\nFloor Requested :#{requestedFloor}\n\n"
     end
 
-    def add_stop(requestFloor, direction)
-        if direction == @current_direction and direction == @name_list[0] and requestFloor >= @current_floor
-            @stop_list.push(requestFloor)
+    def addStop requestFloor, direction
+        if direction == @currentDirection and direction == @wordList[0] and requestFloor >= @currentFloor
+            @stopList.push(requestFloor)
 
-        elsif direction == @current_direction and direction == @name_list[1] and requestFloor <= @current_floor
-            @stop_list.push(requestFloor)
+        elsif direction == @currentDirection and direction == @wordList[1] and requestFloor <= @currentFloor
+            @stopList.push(requestFloor)
 
-        elsif @status == @name_list[2]
-            @stop_list.push(requestFloor)
+        elsif @status == @wordList[2]
+            @stopList.push(requestFloor)
 
-        elsif direction == @name_list[0]
-            @up_buffer.push(requestFloor)
+        elsif direction == @wordList[0]
+            @upBuffer.push(requestFloor)
 
-        elsif direction == @name_list[1]
-            @down_buffer.push(requestFloor)
+        elsif direction == @wordList[1]
+            @downBuffer.push(requestFloor)
         end
 
-        self.list_sorting
+        @listSorting
     end
 
-    def points_update(requestFloor, direction)
-        difference_last_stop = 0
-        if @status != @name_list[2]
-            dif_last_stop = @stop_list.last - requestFloor
-            difference_last_stop = return_positive(dif_last_stop)
+    def pointsUpdate requestFloor, direction
+        differenceLastStop = 0
+        if @status != @wordList[2]
+            if @stopList.length != 0
+                difLastStop = @stopList[-1] - requestFloor
+                differenceLastStop = returnPositive(difLastStop)
+            end
         end
 
-        max_floor_difference = @floor_amount + 1
+        maxFloorDifference = @floorAmount + 1
 
-        dif_floor = @current_floor - requestFloor
-        difference_floor = return_positive(dif_floor)
+        difFloor = @currentFloor - requestFloor
+        differenceFloor = returnPositive(difFloor)
 
         @points = 0
 
-        if @current_direction == direction and @status != @name_list[2]
-            if requestFloor >= @current_floor and direction == @name_list[0] or requestFloor <= @current_floor and direction == @name_list[1]
-                @points = difference_floor
-                @points += @stop_list.length
+        if @currentDirection == direction and @status != @wordList[2]
+            if requestFloor >= @currentFloor and direction == @wordList[0] or requestFloor <= @currentFloor and direction == @wordList[1]
+                @points = differenceFloor
+                @points += @stopList.length
 
-            elsif requestFloor < @current_floor and direction == @name_list[0] or requestFloor > @current_floor and direction == @name_list[1]
-                @points = max_floor_difference
-                @points += difference_last_stop + @stop_list.length
+            elsif requestFloor < @currentFloor and direction == @wordList[0] or requestFloor > @currentFloor and direction == @wordList[1]
+                @points = maxFloorDifference
+                @points += differenceLastStop + @stopList.length
             end
 
-        elsif @status == @name_list[2]
-            @points = max_floor_difference
-            @points += difference_floor
+        elsif @status == @wordList[2]
+            @points = maxFloorDifference
+            @points += differenceFloor
 
-        elsif @current_direction != direction and @status != @name_list[2]
-            @points = max_floor_difference * 2
-            @points += difference_last_stop + @stop_list.length
+        elsif @currentDirection != direction and @status != @wordList[2]
+            @points = maxFloorDifference * 2
+            @points += differenceLastStop + @stopList.length
         end
     end
 
-    def stop_switch()
-        if @down_buffer.length != 0 and @up_buffer != 0
-            puts "elevator #{@ID} is changing direction"
-            if @previous_direction == @name_list[0]
-                @current_direction = "down"
+    def stopSwitch
+        if @downBuffer.length != 0 and @upBuffer != 0
+            print "Elevator #{@ID} is changing direction"
+            if @previousDirection == @wordList[0]
+                @currentDirection = "down"
 
-                for i in @down_buffer
-                    @stop_list.push(i)
-                    @down_buffer.delete_at(0)
+                for i in @downBuffer
+                    @stopList.push(i)
+                    @downBuffer.delete_at(0)
                 end
             
-            elsif @previous_direction == @name_list[1]
-                @current_direction = "up"
+            elsif @previousDirection == @wordList[1]
+                @currentDirection = "up"
 
-                for i in @up_buffer
-                    @stop_list.push(i)
-                    @up_buffer.delete_at(0)
+                for i in @upBuffer
+                    @stopList.push(i)
+                    @upBuffer.delete_at(0)
                 end
             end
         
-        elsif @down_buffer.length != 0 and @up_buffer.length == 0
-            puts "elevator #{@ID} is changing direction"
-            @current_direction = "down"
+        elsif @downBuffer.length != 0 and @upBuffer.length == 0
+            print "Elevator #{@ID} is changing direction"
+            @currentDirection = "down"
 
-            for i in @down_buffer
-                @stop_list.push(i)
-                @down_buffer.delete_at(0)
+            for i in @downBuffer
+                @stopList.push(i)
+                @downBuffer.delete_at(0)
             end
 
-        elsif @down_buffer.length == 0 and @up_buffer.length != 0
-            puts "elevator #{@ID} is changing direction"
-            @current_direction = "up"
+        elsif @downBuffer.length == 0 and @upBuffer.length != 0
+            print "Elevator #{@ID} is changing direction"
+            @currentDirection = "up"
 
-            for i in @up_buffer
-                @stop_list.push(i)
-                @up_buffer.delete_at(0)
+            for i in @upBuffer
+                @stopList.push(i)
+                @upBuffer.delete_at(0)
             end
 
-        elsif @down_buffer.length == 0 and @up_buffer.length == 0
+        elsif @downBuffer.length == 0 and @upBuffer.length == 0
             @status = "IDLE"
-            @current_direction = "stop"
+            @currentDirection = "stop"
         end
 
-        if @stop_list.length != 0
-            self.list_sorting
-            self.run
+        if @stopList.length != 0
+            @listSorting
+            @run
         end
     end
 
-    def run()
-        puts "running elevator : #{@ID}"
-        while @stop_list.length != 0
-            if @stop_list.length !=0
-                while @current_floor != @stop_list[0]
-                    if @stop_list[0] < @current_floor
-                        @current_direction = "down"
-                        @previous_direction = @current_direction
-                        @current_floor -= 1
+    def run
+        while @stopList.length != 0
+            if @stopList.length !=0
+                while @currentFloor != @stopList[0]
+                    if @stopList[0] < @currentFloor
+                        @currentDirection = "down"
+                        @previousDirection = @currentDirection
+                        @currentFloor -= 1
                         @status = "MOVING"
 
-                    elsif @stop_list[0] > @current_floor
-                        @current_direction = "up"
-                        @previous_direction = @current_direction
-                        @current_floor += 1
+                    elsif @stopList[0] > @currentFloor
+                        @currentDirection = "up"
+                        @previousDirection = @currentDirection
+                        @currentFloor += 1
                         @status = "MOVING"
                     end
 
-                    if @current_floor != @previous_floor
-                        puts "floor : #{@current_floor}"
-                        @previous_floor = @current_floor
+                    if @currentFloor != @previousFloor and @stopList[0] != @currentFloor
+                        print "Elevator #{@ID} has the Direction of #{@currentDirection} and the Status of #{@status}. He's at Floor #{@currentFloor}\n"
+                        @previousFloor = @currentFloor
                     end
                 end
 
-                if @stop_list[0] == @current_floor
-                    print "elevator #{@ID} arrived at floor #{@stop_list[0]} \n"
-                    self.door_state
-                    @stop_list.delete_at(0)
+                if @stopList[0] == @currentFloor
+                    self.doorState
+                    @stopList.delete_at(0)
                 end
             
-            elsif @stop_list.length == 0
-                self.stop_switch
+            elsif @stopList.length == 0
+                @stopSwitch
             end
         end
         
-        if @stop_list.length == 0
-            self.stop_switch
+        if @stopList.length == 0
+            @stopSwitch
         end
     end
 
-    def change_value current_floor, stop_list, down_buffer, up_buffer, current_direction, status
-        @current_floor = current_floor
-        @stop_list = stop_list
-        @down_buffer = down_buffer
-        @up_buffer = up_buffer
-        @current_direction = current_direction
+    def changeValue currentFloor, stopList, downBuffer, upBuffer, currentDirection, status
+        @currentFloor = currentFloor
+        @stopList = stopList
+        @downBuffer = downBuffer
+        @upBuffer = upBuffer
+        @currentDirection = currentDirection
         @status = status
-        @list_sorting
+        @listSorting
     end
 end
 
 class Column
-    attr_accessor :floor_amount, :elevator_list, :elevator_per_col
-    def initialize(_floor_amount, _elevator_per_col)
-        @floor_amount = _floor_amount
-        @elevator_per_col = _elevator_per_col
-        @elevator_list = []
+    attr_accessor :floorAmount, :elevatorList, :elevatorPerColumn
+    def initialize _floorAmount, _elevatorPerColumn
+        @floorAmount = _floorAmount
+        @elevatorPerColumn = _elevatorPerColumn
+        @elevatorList = []
 
-        for i in 1..@elevator_per_col
-            e = Elevator.new(i, @floor_amount)
-            @elevator_list.push(e)
+        for i in 1..@elevatorPerColumn
+            e = Elevator.new(i, @floorAmount)
+            @elevatorList.push(e)
         end
     end
 
-    def printElev
-        puts @elevator_list
-    end
-
-    def requestElevator(requestedFloor, direction)
-        print("Request From LV #{requestedFloor} And Going #{direction}\n")
-
-        for i in 0..(@elevator_per_col - 1)
-            @elevator_list[i].points_update requestedFloor, direction
+    def requestElevator requestedFloor, direction
+        for i in 0..(@elevatorPerColumn - 1)
+            @elevatorList[i].pointsUpdate requestedFloor, direction
         end
 
-        bubble_sort(@elevator_list)
-        best_elevator = @elevator_list[0]
+        print "...\nRequest from Floor #{requestedFloor} And Going #{direction}\n\n"
 
-        puts "SENDING ELEVATOR #{best_elevator.ID} \n..."
-        best_elevator.add_stop requestedFloor, direction
-        best_elevator.run
-        return best_elevator
+        for i in 0..(@elevatorList.length - 1)
+            print "Elevator #{@elevatorList[i].ID} has #{@elevatorList[i].points} Points\n"
+        end
+
+        bubbleSort(@elevatorList)
+        bestElevator = @elevatorList[0]
+
+        print "Elevator #{bestElevator.ID} is sent\n\n"
+
+        bestElevator.addStop requestedFloor, direction
+        bestElevator.run
+        return bestElevator
     end
 
-    def runAll
-        for i in 0..(@elevator_list.length - 1)
-            @elevator_list[i].run
+    def runElevators
+        for i in 0..(@elevatorList.length - 1)
+            @elevatorList[i].listSorting
+            @elevatorList[i].run
         end
     end
 
-    def requestFloor(elevator ,requestedFloor)
-        elevator.send_request requestedFloor
+    def requestFloor elevator ,requestedFloor
+        elevator.sendRequest requestedFloor
         elevator.run
     end
 
-    def change_value(elevator, current_floor, stop_list, down_buffer, up_buffer, current_direction, status)
-        @elevator_list[elevator].change_value current_floor, stop_list, down_buffer, up_buffer, current_direction, status
+    def changeValue elevator, currentFloor, stopList, downBuffer, upBuffer, currentDirection, status
+        @elevatorList[elevator].changeValue currentFloor, stopList, downBuffer, upBuffer, currentDirection, status
     end
 end
 
-col = Column.new(10, 2)
+col = Column.new 10, 2
 
-def scenario1(col)
-    col.change_value 0, 2, [], [], [], "stop", "IDLE"
-    col.change_value 1, 6, [], [], [], "stop", "IDLE"
+def scenario1 col
+    col.changeValue 0, 2, [], [], [], "stop", "IDLE"
+    col.changeValue 1, 6, [], [], [], "stop", "IDLE"
 
-    elevator = col.requestElevator(3, "up")
-    col.requestFloor(elevator, 7)
+    elevator = col.requestElevator 3, "up"
+    col.requestFloor elevator, 7
 end
 
-def scenario2(col)
-    col.change_value 0, 10, [], [], [], "stop", "IDLE"
-    col.change_value 1, 3, [], [], [], "stop", "IDLE"
+def scenario2 col
+    col.changeValue 0, 10, [], [], [], "stop", "IDLE"
+    col.changeValue 1, 3, [], [], [], "stop", "IDLE"
 
     elevator = col.requestElevator 1, "up"
     col.requestFloor elevator, 6
@@ -315,23 +307,21 @@ def scenario2(col)
     col.requestFloor elevator, 2
 end
 
-def scenario3(col)
-    col.change_value 0, 10, [], [], [], "stop", "IDLE"
-    col.change_value 1, 3, [6], [], [], "up", "MOVING"
+def scenario3 col
+    col.changeValue 0, 10, [], [], [], "stop", "IDLE"
+    col.changeValue 1, 3, [6], [], [], "up", "MOVING"
 
     elevator = col.requestElevator 3, "down"
     col.requestFloor elevator, 2
 
-    for i in 0..(col.elevator_list.length - 1)
-        col.elevator_list[i].run
-    end
+    col.runElevators
 
     elevator = col.requestElevator 10, "down"
     col.requestFloor elevator, 3
 end
 
-scenario1(col)
-# scenario2(col)
+# scenario1(col)
+scenario2(col)
 # scenario3(col)
 
-col.runAll
+col.runElevators

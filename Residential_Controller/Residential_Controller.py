@@ -1,7 +1,7 @@
 from operator import attrgetter
 import time
 
-def returnPositive(n):
+def returnPositive(n): 
     if n < 0:
         n *= -1
 
@@ -16,18 +16,17 @@ class Printer:
     def doorStage(self):
         print("The Door Are Open")
         wait(3)
-        print("The Door Are Closed")
-        print("\n")
+        print("The Door Are Closed\n")
 
-    
+
     def floorRequest(self, requestedFloor):
-            print("...")
-            wait(1)
-            print("Floor Requested :{}\n".format(requestedFloor))
+        print("...")
+        wait(1)
+        print("Floor Requested :{}\n".format(requestedFloor))
 
 
     def changingDirection(self):
-        print(" Elevator {} is changing direction".format(self.ID))
+        print("Elevator {} is changing direction".format(self.ID))
 
 
     def requestedUser(self, requestedFloor, direction):
@@ -37,17 +36,16 @@ class Printer:
 
 
     def elevatorChosen(self, bestElevator):
-        print("Elevator {} is sent")
+        print("Elevator {} is sent\n".format(bestElevator.ID))
 
 
     def pointingStage(self):
         for i in range(len(self.elevatorList)):
             print("Elevator {} has {} Points".format(self.elevatorList[i].ID, self.elevatorList[i].points))
-        print("\n")
 
 
     def stage(self):
-        print("Elevator {} has the Direction of {} and the Status of {}. He's at Floor {}.".format(self.ID, self.currentDirection, self.status, self.currentFloor))
+        print("Elevator {} has the Direction of {} and the Status of {}. He's at Floor {}".format(self.ID, self.currentDirection, self.status, self.currentFloor))
 
 
 
@@ -238,6 +236,16 @@ class Elevator(Printer):
         self.points = 0
 
 
+    def changeValue(self, currentFloor, StopList, DownBuffer, UpBuffer, currentDirection, status):
+        self.currentFloor = currentFloor
+        self.StopList = StopList
+        self.DownBuffer = DownBuffer
+        self.UpBuffer = UpBuffer
+        self.currentDirection = currentDirection
+        self.status = status
+        self.listSorting()
+
+
 
 class Column(Printer):
     def __init__(self, Elevator, _floorAmount, _elevatorPerColumn):
@@ -269,15 +277,14 @@ class Column(Printer):
         Elevator.run()
 
     
-    def changeValue(self, elevator, currentFloor, StopList, DownBuffer, UpBuffer, currentDirection, status):
-        self.elevatorList[elevator].currentFloor = currentFloor
-        self.elevatorList[elevator].StopList = StopList
-        self.elevatorList[elevator].DownBuffer = DownBuffer
-        self.elevatorList[elevator].UpBuffer = UpBuffer
-        self.elevatorList[elevator].currentDirection = currentDirection
-        self.elevatorList[elevator].status = status
-        self.elevatorList[elevator].listSorting()
+    def runElevators(self):
+        for elevator in self.elevatorList:
+            elevator.listSorting()
+            elevator.run()
 
+    
+    def changeValue(self, elevator, currentFloor, StopList, DownBuffer, UpBuffer, currentDirection, status):
+        self.elevatorList[elevator].changeValue(currentFloor, StopList, DownBuffer, UpBuffer, currentDirection, status)
 
 
 
@@ -313,9 +320,7 @@ def scenario3 ():
     elevator = col.requestElevator(3, "Down")
     col.requestFloor(elevator, 2)
 
-    for elevator in col.elevatorList:
-        elevator.listSorting()
-        elevator.run()
+    col.runElevators()
 
     elevator = col.requestElevator(10, "Down")
     col.requestFloor(elevator, 3)
@@ -333,6 +338,4 @@ scenario2()
 
 # customScenario()
 
-for elevator in col.elevatorList:
-    elevator.listSorting()
-    elevator.run()
+col.runElevators()

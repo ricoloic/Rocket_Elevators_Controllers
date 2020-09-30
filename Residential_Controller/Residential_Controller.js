@@ -1,340 +1,364 @@
-function return_positive(n) {
-    let N = n
+function returnPositive(n) {
+    let N = n;
     if (N < 0) {
-        N *= -1
-    }
+        N *= -1;
+    };
 
     return N;
 };
 
 class Printer {
+    doorStage () {
+        console.log("The Door Are Open");
+        console.log("The Door Are Closed\n");
+    };
 
+    floorRequest (requestedFloor) {
+        console.log("...");
+        console.log(`Floor Requested :${requestedFloor}\n`);
+    };
 
+    changingDirection () {
+        console.log(`Elevator ${this.ID} is changing direction`);
+    };
 
-    
-}
+    printRequest (requestedFloor, direction, bestElevator) {
+        console.log("...");
+        console.log(`Request from Floor ${requestedFloor} And Going ${direction}\n`);
+
+        for (var i = 0; i < this.elevatorList.length; i++) {
+            console.log(`Elevator ${this.elevatorList[i].ID} has ${this.elevatorList[i].points} Points`);
+        };
+
+        console.log(`Elevator ${bestElevator.ID} is sent\n`);
+    };
+
+    stage () {
+        console.log(`Elevator ${this.ID} has the Direction of ${this.currentDirection} and the Status of ${this.status}. He's at Floor ${this.currentFloor}`);
+    };
+
+};
 
 class Elevator extends Printer {
-    constructor (_id, _floor_amount) {
-        this.ID = _id + 1
-        this.floor_amount = _floor_amount
-        this.btn = []
-        this.points
-        this.stop_list = []
-        this.up_buffer = []
-        this.down_buffer =  []
-        this.current_direction
-        this.previous_direction
-        this.current_floor = 0
-        this.previous_floor = 0
-        this.door = "closed"    // false = closed / true = open
-        this.status = "IDLE"    // IDLE / maintenance / moving
+    constructor (_id, _floorAmount) {
+        super();
+        this.ID = _id + 1;
+        this.floorAmount = _floorAmount;
+        this.btn = [];
+        this.points;
+        this.stopList = [];
+        this.upBuffer = [];
+        this.downBuffer =  [];
+        this.currentDirection;
+        this.previousDirection;
+        this.currentFloor = 0;
+        this.previousFloor = 0;
+        this.door = "closed";
+        this.status = "IDLE";
     
-        for (let i = 1; i <= this.floor_amount; i++) {
-            this.btn.push(i)
-        }
-    }
+        for (let i = 1; i <= this.floorAmount; i++) {
+            this.btn.push(i);
+        };
+    };
 
-    check_in (n) {
-        let in_list = true
+    checkIn (n) {
+        let inList = true;
 
-        for (let i = 0; i < this.stop_list.length; i++) {
-            if (n == this.stop_list[i]) {
-                in_list = false
-            }
-        }
+        for (let i = 0; i < this.stopList.length; i++) {
+            if (n == this.stopList[i]) {
+                inList = false;
+            };
+        };
 
-        return in_list;
-    }
+        return inList;
+    };
 
-    door_state () {
-        this.door = "open"
-        console.log("the door is " + this.door + "\n...")
+    doorState () {
+        this.door = "open";
+        this.door = "closed";
+        this.doorStage();
+    };
 
-        this.door = "closed"
-        console.log("the door is " + this.door + "\n...")
-    }
+    listSorting () {
+        if (this.currentDirection == "up") {
+            this.stopList.sort(function(a, b) {return a - b});
 
-    list_sorting () {
-        if (this.current_direction == "up") {
-            this.stop_list.sort(function(a, b) {return a - b})
-
-        } else if (this.current_direction == "down") {
-            this.stop_list.sort(function(a, b) {return b - a})
+        } else if (this.currentDirection == "down") {
+            this.stopList.sort(function(a, b) {return b - a});
 
         } else {
-            this.stop_list.sort(function(a, b) {return a - b})
-        }
-    }
+            this.stopList.sort(function(a, b) {return a - b});
+        };
+    };
 
-    send_request (requestedFloor) {
-        if (this.check_in(requestedFloor)) {
-            this.stop_list.push(requestedFloor)
+    sendRequest (requestedFloor) {
+        if (this.checkIn(requestedFloor)) {
+            this.stopList.push(requestedFloor);
 
-            if (this.current_floor > requestedFloor) {
-                this.status = "MOVING"
-                this.current_direction = "down"
-            }
+            if (this.currentFloor > requestedFloor) {
+                this.status = "MOVING";
+                this.currentDirection = "down";
 
-            else if (this.current_floor < requestedFloor) {
-                this.status = "MOVING"
-                this.current_direction = "up"
-            }
+            } else if (this.currentFloor < requestedFloor) {
+                this.status = "MOVING";
+                this.currentDirection = "up";
+            };
 
-            this.list_sorting()
-            console.log("requested floor " + requestedFloor + "\n...")
-        }
-    }
+            this.listSorting();
+            this.floorRequest(requestedFloor);
+        };
+    };
 
-    add_stop (requestFloor, direction) {
-        if (this.check_in(requestFloor)) {
-            if (direction == this.current_direction && direction == "up" && requestFloor >= this.current_floor) {
-                this.stop_list.push(requestFloor)
+    addStop (requestFloor, direction) {
+        if (this.checkIn(requestFloor)) {
+            if (direction == this.currentDirection && direction == "up" && requestFloor >= this.currentFloor) {
+                this.stopList.push(requestFloor);
 
-            } else if (direction == this.current_direction && direction == "down" && requestFloor <= this.current_floor) {
-                this.stop_list.push(requestFloor)
+            } else if (direction == this.currentDirection && direction == "down" && requestFloor <= this.currentFloor) {
+                this.stopList.push(requestFloor);
 
             } else if (this.status == "IDLE") {
-                this.stop_list.push(requestFloor)
+                this.stopList.push(requestFloor);
 
             } else if (direction == "up") {
-                this.up_buffer.push(requestFloor)
+                this.upBuffer.push(requestFloor);
 
             } else if (direction == "down") {
-                this.down_buffer.push(requestFloor)
-            }
+                this.downBuffer.push(requestFloor);
+            };
 
-            this.list_sorting()
-        }
-    }
+            this.listSorting();
+        };
+    };
 
-    points_update (requestFloor, direction) {
-        let difference_last_stop = 0
+    pointsUpdate (requestFloor, direction) {
+        let differenceLastStop = 0;
         if (this.status != "IDLE") {
-            let dif_last_stop = this.stop_list[this.stop_list.length - 1] - requestFloor
-            difference_last_stop = return_positive(dif_last_stop)
-        }
+            let difLastStop = this.stopList[this.stopList.length - 1] - requestFloor;
+            differenceLastStop = returnPositive(difLastStop);
+        };
 
-        let max_floor_difference = this.floor_amount + 1
+        let maxFloorDifference = this.floorAmount + 1;
 
-        let dif_floor = this.current_floor - requestFloor
-        let difference_floor = return_positive(dif_floor)
+        let difFloor = this.currentFloor - requestFloor;
+        let differenceFloor = returnPositive(difFloor);
 
-        this.points = 0
+        this.points = 0;
 
-        if (this.current_direction == direction && this.status != "IDLE") {
-            if (requestFloor >= this.current_floor && direction == "up" || requestFloor <= this.current_floor && direction == "down") {
-                this.points = difference_floor
-                this.points += this.stop_list.length
+        if (this.currentDirection == direction && this.status != "IDLE") {
+            if (requestFloor >= this.currentFloor && direction == "up" || requestFloor <= this.currentFloor && direction == "down") {
+                this.points = differenceFloor;
+                this.points += this.stopList.length;
 
-            } else if (requestFloor < this.current_floor && direction == "up" || requestFloor > this.current_floor && direction == "down") {
-                this.points = max_floor_difference
-                this.points  += difference_last_stop + this.stop_list.length
-            }
+            } else if (requestFloor < this.currentFloor && direction == "up" || requestFloor > this.currentFloor && direction == "down") {
+                this.points = maxFloorDifference;
+                this.points  += differenceLastStop + this.stopList.length;
+            };
 
         } else if (this.status == "IDLE") {
-            this.points = max_floor_difference
-            this.points += difference_floor
+            this.points = maxFloorDifference;
+            this.points += differenceFloor;
 
-        } else if (this.current_direction != direction && this.status != "IDLE") {
-            this.points = max_floor_difference * 2
-            this.points += difference_last_stop + this.stop_list.length
-        }
-    }
+        } else if (this.currentDirection != direction && this.status != "IDLE") {
+            this.points = maxFloorDifference * 2;
+            this.points += differenceLastStop + this.stopList.length;
+        };
+    };
 
-    stop_switch () {
-        if (this.down_buffer.length != 0 && this.up_buffer.length != 0) {
-            console.log("elevator " + this.ID + " is changing direction")
-            if (this.previous_direction == "up") {
-                this.current_direction = "down"
-                for (let i = 0; i < this.down_buffer.length; i++) {
-                    this.stop_list.push(this.down_buffer[0])
-                    this.down_buffer.splice(0, 1)
-                }
+    stopSwitch () {
+        if (this.downBuffer.length != 0 && this.upBuffer.length != 0) {
+            this.changingDirection();
+            if (this.previousDirection == "up") {
+                this.currentDirection = "down";
+                for (let i = 0; i < this.downBuffer.length; i++) {
+                    this.stopList.push(this.downBuffer[0]);
+                    this.downBuffer.splice(0, 1);
+                };
 
-            } else if (this.previous_direction == "down") {
-                this.current_direction = "up"
-                for (let i = 0; i < this.up_buffer.length; i++) {
-                    this.stop_list.push(this.up_buffer[0])
-                    this.up_buffer.splice(0, 1)
-                }
-            }
+            } else if (this.previousDirection == "down") {
+                this.currentDirection = "up";
+                for (let i = 0; i < this.upBuffer.length; i++) {
+                    this.stopList.push(this.upBuffer[0]);
+                    this.upBuffer.splice(0, 1);
+                };
+            };
 
-        } else if (this.down_buffer.length != 0 && this.up_buffer.length == 0) {
-            console.log("elevator " + this.ID + " is changing direction")
-            this.current_direction = "down"
-            for (let i = 0; i < this.down_buffer.length; i++) {
-                this.stop_list.push(this.down_buffer[0])
-                this.down_buffer.splice(0, 1)
-            }
+        } else if (this.downBuffer.length != 0 && this.upBuffer.length == 0) {
+            this.changingDirection();
+            this.currentDirection = "down";
+            for (let i = 0; i < this.downBuffer.length; i++) {
+                this.stopList.push(this.downBuffer[0]);
+                this.downBuffer.splice(0, 1);
+            };
 
-        } else if (this.down_buffer.length == 0 && this.up_buffer.length != 0) {
-            console.log("elevator " + this.ID + " is changing direction")
-            this.current_direction = "up"
-            for (let i = 0; i < this.up_buffer.length; i++) {
-                this.stop_list.push(this.up_buffer[0])
-                this.up_buffer.splice(0, 1)
-            }
+        } else if (this.downBuffer.length == 0 && this.upBuffer.length != 0) {
+            this.changingDirection();
+            this.currentDirection = "up";
+            for (let i = 0; i < this.upBuffer.length; i++) {
+                this.stopList.push(this.upBuffer[0]);
+                this.upBuffer.splice(0, 1);
+            };
 
-        } else if (this.down_buffer.length == 0 && this.up_buffer.length == 0) {
-            this.status = "IDLE"
-            this.current_direction = "stop"
-        }
+        } else if (this.downBuffer.length == 0 && this.upBuffer.length == 0) {
+            this.status = "IDLE";
+            this.currentDirection = "stop";
+        };
 
-        if (this.stop_list.length != 0) {
-            this.list_sorting()
-            this.run()
-        }
-    }
+        if (this.stopList.length != 0) {
+            this.listSorting();
+            this.run();
+        };
+    };
 
     run () {
-        console.log("running elevator : " + this.ID)
-        while (this.stop_list.length != 0) {
-            if (this.stop_list.length != 0) {
-                while (this.current_floor != this.stop_list[0]) {
-                    if (this.stop_list[0] < this.current_floor) {
-                        this.current_direction = "down"
-                        this.previous_direction = this.current_direction
-                        this.current_floor -= 1
-                        this.status = "MOVING"
+        while (this.stopList.length != 0) {
+            if (this.stopList.length != 0) {
+                while (this.currentFloor != this.stopList[0]) {
+                    if (this.stopList[0] < this.currentFloor) {
+                        this.currentDirection = "down";
+                        this.previousDirection = this.currentDirection;
+                        this.currentFloor -= 1;
+                        this.status = "MOVING";
 
-                    } else if (this.stop_list[0] > this.current_floor) {
-                        this.current_direction = "up"
-                        this.previous_direction = this.current_direction
-                        this.current_floor += 1
-                        this.status = "MOVING"
-                    }
+                    } else if (this.stopList[0] > this.currentFloor) {
+                        this.currentDirection = "up";
+                        this.previousDirection = this.currentDirection;
+                        this.currentFloor += 1;
+                        this.status = "MOVING";
+                    };
 
-                    if (this.current_floor != this.previous_floor) {
-                        console.log("floor : " + this.current_floor)
-                        this.previous_floor = this.current_floor
-                    }
-                }
+                    if (this.currentFloor != this.previousFloor) {
+                        this.stage();
+                        this.previousFloor = this.currentFloor;
+                    };
+                };
 
-                if (this.stop_list[0] == this.current_floor) {
-                    console.log("elevator " + this.ID + " arrived at floor " + this.stop_list[0] + "\n...")
-                    this.door_state()
-                    this.stop_list.splice(0, 1)
-                }
+                if (this.stopList[0] == this.currentFloor) {
+                    this.doorState();
+                    this.stopList.splice(0, 1);
+                };
 
-            } else if (this.stop_list.length == 0) {
-                this.stop_switch()
-            }
-        } 
-        
-        if (this.stop_list.length == 0) {
-            this.stop_switch()
-        }
-    }
-}
+            } else if (this.stopList.length == 0) {
+                this.stopSwitch();
+            };
+        };
+
+        if (this.stopList.length == 0) {
+            this.stopSwitch();
+        };
+    };
+};
 
 class Column extends Printer {
-    constructor (Elevator, _floor_amount, _elevator_per_col) {
-        this.floor_amount = _floor_amount
-        this.elevator_per_col = _elevator_per_col
-        this.elevator_list = []
+    constructor (_floorAmount, _elevatorPerColumn) {
+        super();
+        this.floorAmount = _floorAmount;
+        this.elevatorPerColumn = _elevatorPerColumn;
+        this.elevatorList = [];
 
-        for (let i = 0; i < this.elevator_per_col; i++) {
-            let e = new Elevator(i, this.floor_amount)
-            this.elevator_list.push(e)
-        }
-    }
+        for (let i = 0; i < this.elevatorPerColumn; i++) {
+            let e = new Elevator(i, this.floorAmount);
+            this.elevatorList.push(e);
+        };
+    };
+
+    runElevators () {
+        for (let i = 0; i < this.elevatorList.length; i++) {
+            this.elevatorList[i].listSorting();
+            this.elevatorList[i].run();
+        };
+    };
 
     requestElevator (requestFloor, direction) {
-        console.log("user request from floor " + requestFloor + "\n...")
+        for (let i = 0; i < this.elevatorList.length; i++) {
+            this.elevatorList[i].pointsUpdate(requestFloor, direction);
+        };
 
-        for (let i = 0; i < this.elevator_list.length; i++) {
-            this.elevator_list[i].points_update(requestFloor, direction)
-        }
-
-        this.elevator_list.sort(function(a, b) {
+        this.elevatorList.sort(function(a, b) {
             return parseFloat(a.points) - parseFloat(b.points);
-        })
+        });
+        let bestElevator = this.elevatorList[0];
 
-        let best_elevator = this.elevator_list[0]
-        console.log("SENDING ELEVATOR " + best_elevator.ID + "\n...")
-        best_elevator.add_stop(requestFloor, direction)
-        best_elevator.run()
-        return best_elevator;
-    }
+        this.printRequest(requestFloor, direction, bestElevator);
+        bestElevator.addStop(requestFloor, direction);
+        bestElevator.run();
+        return bestElevator;
+    };
 
     requestFloor (Elevator, requestedFloor) {
-        Elevator.send_request(requestedFloor)
-        Elevator.run()
-    }
+        Elevator.sendRequest(requestedFloor);
+        Elevator.run();
+    };
 
-    change_value (elevator, current_floor, stop_list, down_buffer, up_buffer, current_direction, status) {
-        this.elevator_list[elevator].current_floor = current_floor
-        this.elevator_list[elevator].stop_list = stop_list
-        this.elevator_list[elevator].down_buffer = down_buffer
-        this.elevator_list[elevator].up_buffer = up_buffer
-        this.elevator_list[elevator].current_direction = current_direction
-        this.elevator_list[elevator].status = status
-        this.elevator_list[elevator].list_sorting()
-    }
-}
+    changeValue (elevator, currentFloor, stopList, downBuffer, upBuffer, currentDirection, status) {
+        this.elevatorList[elevator].currentFloor = currentFloor;
+        this.elevatorList[elevator].stopList = stopList;
+        this.elevatorList[elevator].downBuffer = downBuffer;
+        this.elevatorList[elevator].upBuffer = upBuffer;
+        this.elevatorList[elevator].currentDirection = currentDirection;
+        this.elevatorList[elevator].status = status;
+        this.elevatorList[elevator].listSorting();
+    };
+};
 
-// test
-var col = new Column(Elevator, 10, 2)
+class Scenario {
+    constructor (_nbFloor, _nbElevator) {
+        this.col = new Column(_nbFloor, _nbElevator)
+    };
 
-// column.change_value(elevator, current_floor, stop_list, down_buffer, up_buffer, current_direction, status)
+    codeboxx (i) {
+        if (i == 1) {
+            this.col.changeValue(0, 2, [], [], [], "stop", "IDLE");
+            this.col.changeValue(1, 6, [], [], [], "stop", "IDLE");
+        
+            let elevator = this.col.requestElevator(3, "up");
+            this.col.requestFloor(elevator, 7);
 
-function scenario1 () {
-    col.change_value(0, 2, [], [], [], "stop", "IDLE")
-    col.change_value(1, 6, [], [], [], "stop", "IDLE")
-    
-    let elevator = col.requestElevator(3, "up")
-    col.requestFloor(elevator, 7)
-}
+        } else if (i == 2) {
+            this.col.changeValue(0, 10, [], [], [], "stop", "IDLE");
+            this.col.changeValue(1, 3, [], [], [], "stop", "IDLE");
 
-function scenario2 () {
-    col.change_value(0, 10, [], [], [], "stop", "IDLE")
-    col.change_value(1, 3, [], [], [], "stop", "IDLE")
+            let elevator = this.col.requestElevator(1, "up");
+            this.col.requestFloor(elevator, 6);
 
-    let elevator = col.requestElevator(1, "up")
-    col.requestFloor(elevator, 6)
+            elevator = this.col.requestElevator(3, "up");
+            this.col.requestFloor(elevator, 5);
 
-    elevator = col.requestElevator(3, "up")
-    col.requestFloor(elevator, 5)
+            elevator = this.col.requestElevator(9, "down");
+            this.col.requestFloor(elevator, 2);
 
-    elevator = col.requestElevator(9, "down")
-    col.requestFloor(elevator, 2)
+            elevator = this.col.requestElevator(4, "down");
+            this.col.requestFloor(elevator, 10);
 
-    elevator = col.requestElevator(4, "down")
-    col.requestFloor(elevator, 10)
-}
+        } else if (i == 3) {
+            this.col.changeValue(0, 10, [], [], [], "stop", "IDLE");
+            this.col.changeValue(1, 3, [6], [], [], "up", "MOVING");
+        
+            let elevator = this.col.requestElevator(3, "down");
+            this.col.requestFloor(elevator, 2);
+        
+            this.col.runElevators();
+        
+            elevator = this.col.requestElevator(10, "down");
+            this.col.requestFloor(elevator, 3);
+        };
 
-function scenario3 () {
-    col.change_value(0, 10, [], [], [], "stop", "IDLE")
-    col.change_value(1, 3, [6], [], [], "up", "MOVING")
+        this.col.runElevators();
+    };
 
-    let elevator = col.requestElevator(3, "down")
-    col.requestFloor(elevator, 2)
+    custom (i) {
+        if (i == 1) {
+            this.col.changeValue(0, 9, [7, 6, 5, 3], [], [4, 10], "down", "MOVING");
+            this.col.changeValue(1, 5, [6, 8, 10], [7, 3], [2, 5], "up", "MOVING");
 
-    for (let i = 0; i < col.elevator_list.length; i++) {
-        col.elevator_list[i].list_sorting()
-        col.elevator_list[i].run()
-    }
+            let elevator = this.col.requestElevator(4, "down");
+            this.col.requestFloor(elevator, 10);
+        };
 
-    elevator = col.requestElevator(10, "down")
-    col.requestFloor(elevator, 3)
-}
+        this.col.runElevators();
+    };
+};
 
-function customScenario () {
-    col.change_value(0, 9, [7, 6, 5, 3], [], [4, 10], "down", "MOVING")
-    col.change_value(1, 5, [6, 8, 10], [7, 3], [2, 5], "up", "MOVING")
+let scenario = new Scenario(10, 2);
 
-    let elevator = col.requestElevator(4, "down")
-    col.requestFloor(elevator, 10)
-}
-
-// scenario1()
-// scenario2()
-scenario3()
-
-// customScenario()
-
-for (let i = 0; i < col.elevator_list.length; i++) {
-    col.elevator_list[i].list_sorting()
-    col.elevator_list[i].run()
-}
+scenario.codeboxx(3);
