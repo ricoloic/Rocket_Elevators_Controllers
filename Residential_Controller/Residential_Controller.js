@@ -81,13 +81,13 @@ class Elevator extends Printer {
 
     listSorting () {
         if (this.currentDirection == "up") {
-            this.stopList.sort(function(a, b) {return a - b});
+            this.stopList.sort((a, b) => {return a - b});
 
         } else if (this.currentDirection == "down") {
-            this.stopList.sort(function(a, b) {return b - a});
+            this.stopList.sort((a, b) => {return b - a});
 
         } else {
-            this.stopList.sort(function(a, b) {return a - b});
+            this.stopList.sort((a, b) => {return a - b});
         };
     };
 
@@ -274,10 +274,10 @@ class Column extends Printer {
             this.elevatorList[i].pointsUpdate(requestFloor, direction);
         };
 
-        this.elevatorList.sort(function(a, b) {
+        this.elevatorList.sort((a, b) => {
             return parseFloat(a.points) - parseFloat(b.points);
         });
-        let bestElevator = this.elevatorList[0];
+        const bestElevator = this.elevatorList[0];
 
         this.printRequest(requestFloor, direction, bestElevator);
         bestElevator.addStop(requestFloor, direction);
@@ -285,9 +285,9 @@ class Column extends Printer {
         return bestElevator;
     };
 
-    requestFloor (Elevator, requestedFloor) {
-        Elevator.sendRequest(requestedFloor);
-        Elevator.run();
+    requestFloor (elevator, requestedFloor) {
+        elevator.sendRequest(requestedFloor);
+        elevator.run();
     };
 
     changeValue (elevator, currentFloor, stopList, downBuffer, upBuffer, currentDirection, status) {
@@ -327,9 +327,6 @@ class Scenario {
             elevator = this.col.requestElevator(9, "down");
             this.col.requestFloor(elevator, 2);
 
-            elevator = this.col.requestElevator(4, "down");
-            this.col.requestFloor(elevator, 10);
-
         } else if (i == 3) {
             this.col.changeValue(0, 10, [], [], [], "stop", "IDLE");
             this.col.changeValue(1, 3, [6], [], [], "up", "MOVING");
@@ -361,4 +358,4 @@ class Scenario {
 
 let scenario = new Scenario(10, 2);
 
-scenario.codeboxx(3);
+scenario.codeboxx(2);

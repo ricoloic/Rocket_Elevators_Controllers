@@ -1,4 +1,4 @@
-def returnPositive(n)
+def positive(n)
     positive = n
     if positive < 0
         positive *= -1
@@ -19,10 +19,41 @@ def bubbleSort(list)
         end
     end
 
-    list
+    return list
 end
 
-class Elevator
+class Printer
+    def doorStage
+        print "Elevator #{@ID} has arrived at Floor #{@currentFloor}\n"
+        print "The Door Are Open\nThe Door Are Closed\n"
+    end
+
+    def floorRequest requestedFloor
+        print "...\nFloor Requested :#{requestedFloor}\n\n"
+    end
+
+    def changingDirection
+        print "Elevator #{@ID} is changing direction"
+    end
+
+    def pointingList
+        for i in @elevatorList
+            print "Elevator #{i.ID} has #{i.points} Points\n"
+        end
+    end
+
+    def printRequest requestedFloor, direction, bestElevator
+        print "...\nRequest from Floor #{requestedFloor} And Going #{direction}\n\n"
+
+        print "Elevator #{bestElevator.ID} is sent\n\n"
+    end
+
+    def stage
+        print "Elevator #{@ID} has the Direction of #{@currentDirection} and the Status of #{@status}. He's at Floor #{@currentFloor}\n"
+    end
+end
+
+class Elevator < Printer
     attr_accessor :points, :ID, :stopList
     def initialize _id, _floorAmount
         @ID = _id
@@ -31,7 +62,7 @@ class Elevator
         @points = 0
         @stopList = []
         @upBuffer = []
-        @downBuffer =  []
+        @downBuffer = []
         @currentDirection
         @previousDirection
         @currentFloor = 0
@@ -43,11 +74,6 @@ class Elevator
         for i in 1..@floorAmount
             @btn.push(i + 1)
         end
-    end
-
-    def doorState
-        print "Elevator #{@ID} has arrived at Floor #{@currentFloor}\n"
-        print "The Door Are Open\nThe Door Are Closed\n\n"
     end
 
     def listSorting
@@ -75,7 +101,7 @@ class Elevator
         end
 
         @listSorting
-        print "...\nFloor Requested :#{requestedFloor}\n\n"
+        floorRequest requestedFloor
     end
 
     def addStop requestFloor, direction
@@ -100,20 +126,18 @@ class Elevator
 
     def pointsUpdate requestFloor, direction
         differenceLastStop = 0
-        if @status != @wordList[2]
-            if @stopList.length != 0
-                difLastStop = @stopList[-1] - requestFloor
-                differenceLastStop = returnPositive(difLastStop)
-            end
+        if @stopList.length != 0
+            difLastStop = @stopList[-1] - requestFloor
+            differenceLastStop = positive(difLastStop)
         end
 
         maxFloorDifference = @floorAmount + 1
 
         difFloor = @currentFloor - requestFloor
-        differenceFloor = returnPositive(difFloor)
+        differenceFloor = positive(difFloor)
 
         @points = 0
-
+        puts @currentDirection
         if @currentDirection == direction and @status != @wordList[2]
             if requestFloor >= @currentFloor and direction == @wordList[0] or requestFloor <= @currentFloor and direction == @wordList[1]
                 @points = differenceFloor
@@ -135,8 +159,8 @@ class Elevator
     end
 
     def stopSwitch
-        if @downBuffer.length != 0 and @upBuffer != 0
-            print "Elevator #{@ID} is changing direction"
+        if @downBuffer.length != 0 and @upBuffer.length != 0
+            changingDirection
             if @previousDirection == @wordList[0]
                 @currentDirection = "down"
 
@@ -155,7 +179,7 @@ class Elevator
             end
         
         elsif @downBuffer.length != 0 and @upBuffer.length == 0
-            print "Elevator #{@ID} is changing direction"
+            changingDirection
             @currentDirection = "down"
 
             for i in @downBuffer
@@ -164,7 +188,7 @@ class Elevator
             end
 
         elsif @downBuffer.length == 0 and @upBuffer.length != 0
-            print "Elevator #{@ID} is changing direction"
+            changingDirection
             @currentDirection = "up"
 
             for i in @upBuffer
@@ -173,7 +197,7 @@ class Elevator
             end
 
         elsif @downBuffer.length == 0 and @upBuffer.length == 0
-            @status = "IDLE"
+            @status = @wordList[2]
             @currentDirection = "stop"
         end
 
@@ -201,13 +225,13 @@ class Elevator
                     end
 
                     if @currentFloor != @previousFloor and @stopList[0] != @currentFloor
-                        print "Elevator #{@ID} has the Direction of #{@currentDirection} and the Status of #{@status}. He's at Floor #{@currentFloor}\n"
+                        stage
                         @previousFloor = @currentFloor
                     end
                 end
 
                 if @stopList[0] == @currentFloor
-                    self.doorState
+                    doorStage
                     @stopList.delete_at(0)
                 end
             
@@ -221,6 +245,10 @@ class Elevator
         end
     end
 
+    def resetPointing
+        @points = 0
+    end
+
     def changeValue currentFloor, stopList, downBuffer, upBuffer, currentDirection, status
         @currentFloor = currentFloor
         @stopList = stopList
@@ -232,7 +260,7 @@ class Elevator
     end
 end
 
-class Column
+class Column < Printer
     attr_accessor :floorAmount, :elevatorList, :elevatorPerColumn
     def initialize _floorAmount, _elevatorPerColumn
         @floorAmount = _floorAmount
@@ -246,20 +274,30 @@ class Column
     end
 
     def requestElevator requestedFloor, direction
-        for i in 0..(@elevatorPerColumn - 1)
+        for i in 0..(@elevatorList.length - 1)
             @elevatorList[i].pointsUpdate requestedFloor, direction
         end
 
-        print "...\nRequest from Floor #{requestedFloor} And Going #{direction}\n\n"
+        pointingList
 
-        for i in 0..(@elevatorList.length - 1)
-            print "Elevator #{@elevatorList[i].ID} has #{@elevatorList[i].points} Points\n"
+        bestElevator = 0
+        for elev in @elevatorList
+            if bestElevator == 0
+                bestElevator = elev
+
+            elsif elev.points > bestElevator.points
+                bestElevator = elev
+            end
         end
 
-        bubbleSort(@elevatorList)
-        bestElevator = @elevatorList[0]
+        # @elevatorList = bubbleSort(@elevatorList)
+        # bestElevator = @elevatorList[0]
 
-        print "Elevator #{bestElevator.ID} is sent\n\n"
+        printRequest requestedFloor, direction, bestElevator
+
+        for i in @elevatorList
+            i.resetPointing
+        end
 
         bestElevator.addStop requestedFloor, direction
         bestElevator.run
