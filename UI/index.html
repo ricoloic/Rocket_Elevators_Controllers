@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Elevator Controller</title>
+
+		<!-- mobile settings -->
+		<meta name="viewport" content="width=device-width, maximum-scale=1, initial-scale=1, user-scalable=0" />
+		<!--[if IE]><meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'><![endif]-->
+
+		<!-- WEB FONTS : use %7C instead of | (pipe) -->
+		<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600%7CRaleway:300,400,500,600,700%7CLato:300,400,400italic,600,700" rel="stylesheet" type="text/css" />
+
+		<!-- CORE CSS -->
+		<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+		<link href="css.css" rel="stylesheet" type="text/css" />
+	</head>
+
+	<body class="enable-animation">
+		<section class="container">
+			<div class="text-center">
+				<h1>The Residential Controller</h1>
+			</div>
+			<div class="row">
+				<div class="col-6 d-flex">
+					<div class="my-auto mx-auto">
+						<table class="table table-bordered table-secondary">
+							<thead>
+								<tr>
+									<th>ID</th>
+									<th>Status</th>
+									<th>Floor</th>
+									<th>Direction</th>
+									<th>Next Stop</th>
+								</tr>
+							</thead>
+
+							<tbody>
+								<tr class="elevator-1">
+									<td class="id">1</td>
+									<td class="status">IDLE</td>
+									<td class="floor">1</td>
+									<td class="direction">Stop</td>
+									<td class="next-stop">None</td>
+								</tr>
+
+								<tr class="elevator-2">
+									<td class="id">2</td>
+									<td class="status">IDLE</td>
+									<td class="floor">1</td>
+									<td class="direction">Stop</td>
+									<td class="next-stop">None</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+				<div class="col-3">
+					<div class="text-center my-15">
+						<span class="bold my-center">Floor 10</span>
+						<a href="#" class="btn btn-info" id="f-10-down">DOWN</a>
+					</div>
+					<div class="text-center my-15">
+						<span class="bold my-center">Floor 9</span>
+						<a href="#" class="btn btn-info" id="f-9-up">UP</a>
+						<a href="#" class="btn btn-info" id="f-9-down">DOWN</a>
+					</div>
+					<div class="text-center my-15">
+						<span class="bold my-center">Floor 8</span>
+						<a href="#" class="btn btn-info" id="f-8-up">UP</a>
+						<a href="#" class="btn btn-info" id="f-8-down">DOWN</a>
+					</div>
+					<div class="text-center my-15">
+						<span class="bold my-center">Floor 7</span>
+						<a href="#" class="btn btn-info" id="f-7-up">UP</a>
+						<a href="#" class="btn btn-info" id="f-7-down">DOWN</a>
+					</div>
+					<div class="text-center my-15">
+						<span class="bold my-center">Floor 6</span>
+						<a href="#" class="btn btn-info" id="f-6-up">UP</a>
+						<a href="#" class="btn btn-info" id="f-6-down">DOWN</a>
+					</div>
+					<div class="text-center my-15">
+						<span class="bold my-center">Floor 5</span>
+						<a href="#" class="btn btn-info" id="f-5-up">UP</a>
+						<a href="#" class="btn btn-info" id="f-5-down">DOWN</a>
+					</div>
+					<div class="text-center my-15">
+						<span class="bold my-center">Floor 4</span>
+						<a href="#" class="btn btn-info" id="f-4-up">UP</a>
+						<a href="#" class="btn btn-info" id="f-4-down">DOWN</a>
+					</div>
+					<div class="text-center my-15">
+						<span class="bold my-center">Floor 3</span>
+						<a href="#" class="btn btn-info" id="f-3-up">UP</a>
+						<a href="#" class="btn btn-info" id="f-3-down">DOWN</a>
+					</div>
+					<div class="text-center my-15">
+						<span class="bold my-center">Floor 2</span>
+						<a href="#" class="btn btn-info" id="f-2-up">UP</a>
+						<a href="#" class="btn btn-info" id="f-2-down">DOWN</a>
+					</div>
+					<div class="text-center my-15 f-1">
+						<span class="bold my-center">Floor 1</span>
+						<a href="#" class="btn btn-info" id="f-1-up">UP</a>
+					</div>
+				</div>
+
+				<div class="col-3">
+					<div class="elevator-1">
+						<div class="my-15 text-center">
+							<h2>Elevator 1</h2>
+						</div>
+
+						<div class="text-center">
+							<div class="btn btn-success marginY-5 fl-1">&nbsp;1&nbsp;</div>
+							<div class="btn btn-success marginY-5 fl-2">&nbsp;2&nbsp;</div>
+							<div class="btn btn-success marginY-5 fl-3">&nbsp;3&nbsp;</div>
+							<div class="btn btn-success marginY-5 fl-4">&nbsp;4&nbsp;</div>
+							<div class="btn btn-success marginY-5 fl-5">&nbsp;5&nbsp;</div>
+							<div class="btn btn-success marginY-5 fl-6">&nbsp;6&nbsp;</div>
+							<div class="btn btn-success marginY-5 fl-7">&nbsp;7&nbsp;</div>
+							<div class="btn btn-success marginY-5 fl-8">&nbsp;8&nbsp;</div>
+							<div class="btn btn-success marginY-5 fl-9">&nbsp;9&nbsp;</div>
+							<div class="btn btn-success marginY-5 fl-10">10</div>
+						</div>
+					</div>
+
+					<div class="elevator-2">
+						<div class="my-15 text-center">
+							<h2>Elevator 2</h2>
+						</div>
+
+						<div class="text-center">
+							<div class="btn btn-success marginY-5">&nbsp;1&nbsp;</div>
+							<div class="btn btn-success marginY-5">&nbsp;2&nbsp;</div>
+							<div class="btn btn-success marginY-5">&nbsp;3&nbsp;</div>
+							<div class="btn btn-success marginY-5">&nbsp;4&nbsp;</div>
+							<div class="btn btn-success marginY-5">&nbsp;5&nbsp;</div>
+							<div class="btn btn-success marginY-5">&nbsp;6&nbsp;</div>
+							<div class="btn btn-success marginY-5">&nbsp;7&nbsp;</div>
+							<div class="btn btn-success marginY-5">&nbsp;8&nbsp;</div>
+							<div class="btn btn-success marginY-5">&nbsp;9&nbsp;</div>
+							<div class="btn btn-success marginY-5">10</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<script src="scripts.js"></script>
+	</body>
+</html>

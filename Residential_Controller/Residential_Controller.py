@@ -4,13 +4,11 @@ import time
 def returnPositive(n):
     if n < 0:
         n *= -1
-
     return n
 
 def wait(t):
-    t = 0.1
+    t = .1
     time.sleep(t)
-
 
 class Printer:
     def doorStage(self):
@@ -18,35 +16,31 @@ class Printer:
         wait(3)
         print("The Door Are Closed\n")
 
-
     def floorRequest(self, requestedFloor):
         print("...")
         wait(1)
         print("Floor Requested :{}\n".format(requestedFloor))
 
-
     def changingDirection(self):
         print("Elevator {} is changing direction".format(self.ID))
-
 
     def requestedUser(self, requestedFloor, direction):
         print("...")
         wait(2)
-        print("Request from Floor {} And Going {}\n".format(requestedFloor, direction))
-
+        print("Request from Floor {} And Going {}\n".format(
+            requestedFloor, direction))
 
     def elevatorChosen(self, bestElevator):
         print("Elevator {} is sent\n".format(bestElevator.ID))
 
-
     def pointingStage(self):
         for i in range(len(self.elevatorList)):
-            print("Elevator {} has {} Points".format(self.elevatorList[i].ID, self.elevatorList[i].points))
-
+            print("Elevator {} has {} Points".format(
+                self.elevatorList[i].ID, self.elevatorList[i].points))
 
     def stage(self):
-        print("Elevator {} has the Direction of {} and the Status of {}. He's at Floor {}".format(self.ID, self.currentDirection, self.status, self.currentFloor))
-
+        print("Elevator {} has the Direction of {} and the Status of {}. He's at Floor {}".format(
+            self.ID, self.currentDirection, self.status, self.currentFloor))
 
 
 class Elevator(Printer):
@@ -57,7 +51,7 @@ class Elevator(Printer):
         self.points = 0
         self.stopList = []
         self.UpBuffer = []
-        self.DownBuffer =  []
+        self.DownBuffer = []
         self.currentDirection = None
         self.previousDirection = None
         self.currentFloor = 0
@@ -68,12 +62,10 @@ class Elevator(Printer):
         for i in range(self.floorAmount):
             self.btn.append(i + 1)
 
-
     def doorState(self):
         self.door = "open"
         self.door = "closed"
         self.doorStage()
-
 
     def checkIn(self, n):
         inList = True
@@ -83,17 +75,15 @@ class Elevator(Printer):
                 inList = False
         return inList
 
-
     def listSorting(self):
         if self.currentDirection == "Up":
             self.stopList.sort()
 
         elif self.currentDirection == "Down":
-            self.stopList.sort(reverse = True)
+            self.stopList.sort(reverse=True)
 
         else:
             self.stopList.sort()
-
 
     def sendRequest(self, requestedFloor):
         if self.checkIn(requestedFloor):
@@ -102,15 +92,13 @@ class Elevator(Printer):
             if self.currentFloor > requestedFloor:
                 self.status = "MOVING"
                 self.currentDirection = "Down"
-            
+
             elif self.currentFloor < requestedFloor:
                 self.status = "MOVING"
                 self.currentDirection = "Up"
 
             self.listSorting()
             self.floorRequest(requestedFloor)
-
-
 
     def addStop(self, requestFloor, direction):
         if self.checkIn(requestFloor):
@@ -131,7 +119,6 @@ class Elevator(Printer):
 
             self.listSorting()
 
-
     def pointsUpdate(self, requestFloor, direction):
         differenceLastStop = 0
         if self.status != "IDLE":
@@ -149,7 +136,7 @@ class Elevator(Printer):
             if requestFloor >= self.currentFloor and direction == "Up" or requestFloor <= self.currentFloor and direction == "Down":
                 self.points = differenceFloor
                 self.points += len(self.stopList)
-            
+
             elif requestFloor < self.currentFloor and direction == "Up" or requestFloor > self.currentFloor and direction == "Down":
                 self.points = maxFloorDifference
                 self.points += differenceLastStop + len(self.stopList)
@@ -162,7 +149,6 @@ class Elevator(Printer):
             self.points = maxFloorDifference * 2
             self.points += differenceLastStop + len(self.stopList)
 
-
     def StopSwitch(self):
         if len(self.DownBuffer) != 0 and len(self.UpBuffer) != 0:
             self.changingDirection()
@@ -171,7 +157,7 @@ class Elevator(Printer):
                 for i in self.DownBuffer:
                     self.stopList.append(i)
                     del self.DownBuffer[0]
-            
+
             elif self.previousDirection == "Down":
                 self.currentDirection = "Up"
                 for i in self.UpBuffer:
@@ -200,7 +186,6 @@ class Elevator(Printer):
             self.listSorting()
             self.run()
 
-
     def run(self):
         while len(self.stopList) != 0:
             if len(self.stopList) != 0:
@@ -216,11 +201,11 @@ class Elevator(Printer):
                         self.previousDirection = self.currentDirection
                         self.currentFloor += 1
                         self.status = "MOVING"
-                    
+
                     if self.currentFloor != self.previousFloor:
                         self.stage()
                         self.previousFloor = self.currentFloor
-                
+
                 if self.stopList[0] == self.currentFloor:
                     self.doorState()
                     del self.stopList[0]
@@ -231,10 +216,8 @@ class Elevator(Printer):
         if len(self.stopList) == 0:
             self.StopSwitch()
 
-
     def resetPointing(self):
         self.points = 0
-
 
     def changeValue(self, currentFloor, stopList, DownBuffer, UpBuffer, currentDirection, status):
         self.currentFloor = currentFloor
@@ -246,9 +229,8 @@ class Elevator(Printer):
         self.listSorting()
 
 
-
 class Column(Printer):
-    def __init__(self, Elevator, _floorAmount, _elevatorPerColumn):
+    def __init__(self, _floorAmount, _elevatorPerColumn):
         self.floorAmount = _floorAmount
         self.elevatorPerColumn = _elevatorPerColumn
         self.elevatorList = []
@@ -257,12 +239,11 @@ class Column(Printer):
             e = Elevator(i, self.floorAmount)
             self.elevatorList.append(e)
 
-
     def requestElevator(self, requestedFloor, direction):
         for i in range(len(self.elevatorList)):
             self.elevatorList[i].pointsUpdate(requestedFloor, direction)
 
-        bestElevator = min(self.elevatorList, key = attrgetter('points'))
+        bestElevator = min(self.elevatorList, key=attrgetter('points'))
         self.requestedUser(requestedFloor, direction)
 
         self.pointingStage()
@@ -271,75 +252,72 @@ class Column(Printer):
             i.resetPointing()
 
         self.elevatorChosen(bestElevator)
-        bestElevator.addStop(requestedFloor, direction)        
+        bestElevator.addStop(requestedFloor, direction)
         bestElevator.run()
         return bestElevator
-
 
     def requestFloor(self, Elevator, requestedFloor):
         Elevator.sendRequest(requestedFloor)
         Elevator.run()
 
-    
     def runElevators(self):
         for elevator in self.elevatorList:
             elevator.listSorting()
             elevator.run()
 
-    
     def changeValue(self, elevator, currentFloor, stopList, DownBuffer, UpBuffer, currentDirection, status):
-        self.elevatorList[elevator].changeValue(currentFloor, stopList, DownBuffer, UpBuffer, currentDirection, status)
+        self.elevatorList[elevator].changeValue(
+            currentFloor, stopList, DownBuffer, UpBuffer, currentDirection, status)
 
 
+class Scenario:
+    def __init__(self, _floorAmount, _elevatorPerColumn):
+        self.col = Column(_floorAmount, _elevatorPerColumn)
 
-# test
-col = Column(Elevator, 10, 2)
+    def codeboxx(self, n):
+        if n == 1:
+            self.col.changeValue(0, 2, [], [], [], "Stop", "IDLE")
+            self.col.changeValue(1, 6, [], [], [], "Stop", "IDLE")
 
-# column.changeValue(elevator, currentFloor, stopList, DownBuffer, UpBuffer, currentDirection, status)
+            elevator = self.col.requestElevator(3, "Up")
+            self.col.requestFloor(elevator, 7)
 
-def scenario1 ():
-    col.changeValue(0, 2, [], [], [], "Stop", "IDLE")
-    col.changeValue(1, 6, [], [], [], "Stop", "IDLE")
+        elif n == 2:
+            self.col.changeValue(0, 10, [], [], [], "Stop", "IDLE")
+            self.col.changeValue(1, 3, [], [], [], "Stop", "IDLE")
 
-    elevator = col.requestElevator(3, "Up")
-    col.requestFloor(elevator, 7)
+            elevator = self.col.requestElevator(1, "Up")
+            self.col.requestFloor(elevator, 6)
 
-def scenario2 ():
-    col.changeValue(0, 10, [], [], [], "Stop", "IDLE")
-    col.changeValue(1, 3, [], [], [], "Stop", "IDLE")
+            elevator = self.col.requestElevator(3, "Up")
+            self.col.requestFloor(elevator, 5)
 
-    elevator = col.requestElevator(1, "Up")
-    col.requestFloor(elevator, 6)
+            elevator = self.col.requestElevator(9, "Down")
+            self.col.requestFloor(elevator, 2)
 
-    elevator = col.requestElevator(3, "Up")
-    col.requestFloor(elevator, 5)
+        elif n == 3:
+            self.col.changeValue(0, 10, [], [], [], "Stop", "IDLE")
+            self.col.changeValue(1, 3, [6], [], [], "Up", "MOVING")
 
-    elevator = col.requestElevator(9, "Down")
-    col.requestFloor(elevator, 2)
+            elevator = self.col.requestElevator(3, "Down")
+            self.col.requestFloor(elevator, 2)
 
-def scenario3 ():
-    col.changeValue(0, 10, [], [], [], "Stop", "IDLE")
-    col.changeValue(1, 3, [6], [], [], "Up", "MOVING")
+            self.col.runElevators()
 
-    elevator = col.requestElevator(3, "Down")
-    col.requestFloor(elevator, 2)
+            elevator = self.col.requestElevator(10, "Down")
+            self.col.requestFloor(elevator, 3)
 
-    col.runElevators()
+        self.col.runElevators()
 
-    elevator = col.requestElevator(10, "Down")
-    col.requestFloor(elevator, 3)
+    def custom(self):
+        self.col.changeValue(0, 9, [7, 6, 5, 3], [], [4, 10], "Down", "MOVING")
+        self.col.changeValue(1, 5, [6, 8, 10], [7, 3], [2, 5], "Up", "MOVING")
 
-def customScenario ():
-    col.changeValue(0, 9, [7, 6, 5, 3], [], [4, 10], "Down", "MOVING")
-    col.changeValue(1, 5, [6, 8, 10], [7, 3], [2, 5], "Up", "MOVING")
+        elevator = self.col.requestElevator(4, "Down")
+        self.col.requestFloor(elevator, 10)
 
-    elevator = col.requestElevator(4, "Down")
-    col.requestFloor(elevator, 10)
+        self.col.runElevators()
 
-# scenario1()
-scenario2()
-# scenario3()
+scenario = Scenario(10, 2)
 
-# customScenario()
-
-col.runElevators()
+scenario.codeboxx(2)

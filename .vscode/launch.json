@@ -5,42 +5,27 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}"
-            ],
-            "name": "Launch Extension",
-            "outFiles": [
-                "${workspaceFolder}/out/**/*.js"
-            ],
-            "preLaunchTask": "npm",
-            "request": "launch",
-            "type": "pwa-extensionHost"
-        },
-        {
-            "name": "Cucumber",
-            "type": "Ruby",
-            "request": "launch",
-            "program": "${workspaceRoot}/bin/cucumber"
-        },
-        {
-            "name": "Debug Local File",
-            "type": "Ruby",
-            "request": "launch",
-            "program": "${workspaceRoot}/main.rb"
-        },
-        {
             "name":"Python: Current File",
             "type":"python",
             "request":"launch",
             "program":"${file}",
             "console":"integratedTerminal"
         },
+
         {
-            "type": "pwa-chrome",
+            "name": "Launch Chrome",
             "request": "launch",
-            "name": "Launch Chrome against localhost",
-            "url": "http://localhost:8080",
+            "type": "pwa-chrome",
+            "url": "http://localhost:3080",
             "webRoot": "${workspaceFolder}"
+        },
+
+        {
+            "name": "Debug Local File",
+            "type": "Ruby",
+            "request": "launch",
+            "cwd": "${workspaceRoot}/Residential_Controller",
+            "program": "${workspaceRoot}/Residential_Controller/Residential_Controller.rb"
         }
     ]
 }

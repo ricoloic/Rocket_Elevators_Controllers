@@ -1,0 +1,18 @@
+.my-15 {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.marginY-5 {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.bold {
+    font-size: 1.5em;
+    margin-right: 5px;
+}
+
+.my-center {
+    vertical-align: middle;
+}
