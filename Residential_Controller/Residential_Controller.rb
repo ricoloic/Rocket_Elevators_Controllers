@@ -342,5 +342,4 @@ class Scenario
 end
 
 scenario = Scenario.new 10, 2
-
 scenario.codeboxx 2

@@ -367,5 +367,4 @@ class Scenario {
 };
 
 let scenario = new Scenario(10, 2);
-
 scenario.codeboxx(2);

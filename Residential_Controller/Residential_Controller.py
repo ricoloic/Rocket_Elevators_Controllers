@@ -319,5 +319,4 @@ class Scenario:
         self.col.runElevators()
 
 scenario = Scenario(10, 2)
-
 scenario.codeboxx(3)
