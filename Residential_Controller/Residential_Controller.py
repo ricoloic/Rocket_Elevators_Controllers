@@ -7,7 +7,7 @@ def returnPositive(n):
     return n
 
 def wait(t):
-    t = .1
+    # t = .1
     time.sleep(t)
 
 class Printer:
@@ -320,4 +320,4 @@ class Scenario:
 
 scenario = Scenario(10, 2)
 
-scenario.codeboxx(2)
+scenario.codeboxx(3)

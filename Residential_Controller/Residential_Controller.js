@@ -26,7 +26,7 @@ class Printer {
         console.log("...");
         console.log(`Request from Floor ${requestedFloor} And Going ${direction}\n`);
 
-        for (var i = 0; i < this.elevatorList.length; i++) {
+        for (let i = 0; i < this.elevatorList.length; i++) {
             console.log(`Elevator ${this.elevatorList[i].ID} has ${this.elevatorList[i].points} Points`);
         };
 
@@ -313,7 +313,7 @@ class Column extends Printer {
 
 class Scenario {
     constructor(_nbFloor, _nbElevator) {
-        this.col = new Column(_nbFloor, _nbElevator)
+        this.col = new Column(_nbFloor, _nbElevator);
     };
 
     codeboxx(i) {
@@ -368,4 +368,4 @@ class Scenario {
 
 let scenario = new Scenario(10, 2);
 
-scenario.codeboxx(1);
+scenario.codeboxx(2);
