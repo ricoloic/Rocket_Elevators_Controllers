@@ -7,7 +7,7 @@ def returnPositive(n):
     return n
 
 def wait(t):
-    # t = .1
+    t = .1
     time.sleep(t)
 
 class Printer:
@@ -18,7 +18,7 @@ class Printer:
 
     def floorRequest(self, requestedFloor):
         print("...")
-        wait(1)
+        wait(1.5)
         print("Floor Requested :{}\n".format(requestedFloor))
 
     def changingDirection(self):
@@ -39,6 +39,7 @@ class Printer:
                 self.elevatorList[i].ID, self.elevatorList[i].points))
 
     def stage(self):
+        wait(2)
         print("Elevator {} has the Direction of {} and the Status of {}. He's at Floor {}".format(
             self.ID, self.currentDirection, self.status, self.currentFloor))
 
