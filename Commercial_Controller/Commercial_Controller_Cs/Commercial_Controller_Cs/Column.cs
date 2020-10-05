@@ -32,7 +32,7 @@ namespace Elevator_Controller_CSharp
                     minRange = _previousMax + 1;
                 }
             }
-            
+
             else
             {
                 if (_iteration == 0)
