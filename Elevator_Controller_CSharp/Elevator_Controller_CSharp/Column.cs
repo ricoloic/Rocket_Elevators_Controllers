@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Elevator_Controller_CSharp
@@ -12,14 +13,14 @@ namespace Elevator_Controller_CSharp
         public int minRange;
         public List<Elevator> elevatorList = new List<Elevator>();
 
-        public Column(int floorAmount, int _basementAmount, int elevatorColumn, int floorColumn, int iteration, int previousMax)
+        public Column(int _floorAmount, int _basementAmount, int elevatorColumn, int _floorColumn, int _iteration, int _previousMax)
         {
-            ID = iteration + 1;
+            ID = _iteration + 1;
             basementAmount = _basementAmount;
 
             if (basementAmount != 0)
             {
-                if (iteration == 0)
+                if (_iteration == 0)
                 {
                     maxRange = basementAmount;
                     minRange = 1;
@@ -27,29 +28,29 @@ namespace Elevator_Controller_CSharp
 
                 else
                 {
-                    maxRange = iteration * floorColumn + basementAmount + 1;
-                    minRange = previousMax + 1;
+                    maxRange = _iteration * _floorColumn + basementAmount + 1;
+                    minRange = _previousMax + 1;
                 }
             }
             
             else
             {
-                if (iteration == 0)
+                if (_iteration == 0)
                 {
-                    maxRange = floorColumn;
+                    maxRange = _floorColumn;
                     minRange = 1;
                 }
 
                 else
                 {
-                    maxRange = iteration * floorColumn + 1;
-                    minRange = previousMax + 1;
+                    maxRange = _iteration * _floorColumn + 1;
+                    minRange = _previousMax + 1;
                 }
             }
 
             for (int i = 0; i < elevatorColumn; i++)
             {
-                Elevator elevator = new Elevator(i + 1, floorAmount, basementAmount, minRange);
+                Elevator elevator = new Elevator(i + 1, _floorAmount, basementAmount, minRange);
                 elevatorList.Add(elevator);
             }
         }
@@ -73,6 +74,17 @@ namespace Elevator_Controller_CSharp
             Elevator bestOption = elevatorList[0];
 
             bestOption.addStop(_floor, _stop, _direction);
+            Console.WriteLine("Request from Floor {0} and goint to Floor {1}", _floor, _stop);
+            Console.WriteLine("the elevator chosen is : {0}", bestOption.ID);
+            runAll();
+        }
+
+        public void runAll()
+        {
+            foreach (Elevator elevator in elevatorList)
+            {
+                elevator.run();
+            }
         }
 
         public void changeValue(int _elevator, List<int> _stopList, string _status, int _currentFloor, string _currentDirection)

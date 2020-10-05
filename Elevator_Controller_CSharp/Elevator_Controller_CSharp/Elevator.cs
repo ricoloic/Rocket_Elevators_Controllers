@@ -34,13 +34,13 @@ namespace Elevator_Controller_CSharp
             return n;
         }
 
-        public void DoorState()
+        public void doorState()
         {
             door = "open";
             Console.WriteLine("The door are {0}", door);
 
             door = "close";
-            Console.WriteLine("The door are {0}", door);
+            Console.WriteLine("The door are {0}\n", door);
         }
 
         public void listSort()
@@ -48,18 +48,6 @@ namespace Elevator_Controller_CSharp
             if (currentDirection == "down") { stopList.Sort((x, y) => y.CompareTo(x)); }
 
             else { stopList.Sort((x, y) => x.CompareTo(y)); }
-        }
-
-        public void sendRequest(int requestedFloor)
-        {
-            stopList.Add(requestedFloor);
-            status = "MOVING";
-
-            if (currentFloor > requestedFloor) { currentDirection = "down"; }
-
-            else if (currentFloor < requestedFloor) { currentDirection = "up"; }
-
-            listSort();
         }
 
         public void pointsUpdateFloor(int _floor, string _direction, int maxRange)
@@ -89,6 +77,8 @@ namespace Elevator_Controller_CSharp
             }
 
             else if (currentDirection != _direction) { points = maxRange * 2 + differenceLastStop + stopList.Count; }
+
+            Console.WriteLine("{0}, {1}", ID, points);
         }
 
         public void pointsUpdateLobby(int _floor, string _direction, int maxRange)
@@ -110,6 +100,8 @@ namespace Elevator_Controller_CSharp
             else if (currentDirection == _direction) { points = maxRange * 2 + stopList.Count + differenceLastStop; }
 
             if (currentFloor == _floor) { points = stopList.Count; }
+
+            Console.WriteLine("{0}, {1}", ID, points);
         }
 
         public void addStop(int _floor, int _stop, string _direction)
@@ -139,7 +131,14 @@ namespace Elevator_Controller_CSharp
 
                 else if (_direction == currentDirection)
                 {
-                    if (_floor != currentFloor)
+                    if (_floor == currentFloor)
+                    {
+                        stopList.Add(_floor);
+                        stopList.Add(_stop);
+                    }
+
+
+                    else if (_floor != currentFloor)
                     {
                         if (_direction == "up")
                         {
@@ -229,16 +228,35 @@ namespace Elevator_Controller_CSharp
         {
             if (upBuffer.Count != 0 && downBuffer.Count != 0)
             {
-                if (previousDirection == "up") { foreach (int i in downBuffer) { stopList.Add(i); } }
+                if (previousDirection == "up") { foreach (int i in downBuffer) {
+                        stopList.Add(i);
+                        downBuffer.RemoveAt(0);
+                    }
+                }
 
-                else if (previousDirection == "down") { foreach (int i in upBuffer) { stopList.Add(i); } }
+                else if (previousDirection == "down") {
+                    foreach (int i in upBuffer) {
+                        stopList.Add(i);
+                        upBuffer.RemoveAt(0);
+                    }
+                }
             }
 
-            else if (downBuffer.Count != 0 && upBuffer.Count == 0) { foreach (int i in downBuffer) { stopList.Add(i); } }
+            else if (downBuffer.Count != 0 && upBuffer.Count == 0) {
+                foreach (int i in downBuffer) {
+                    stopList.Add(i);
+                    downBuffer.RemoveAt(0);
+                } 
+            }
 
-            else if (downBuffer.Count == 0 && upBuffer.Count != 0) { foreach (int i in upBuffer) { stopList.Add(i); } }
+            else if (downBuffer.Count == 0 && upBuffer.Count != 0) {
+                foreach (int i in upBuffer) {
+                    stopList.Add(i);
+                    upBuffer.RemoveAt(0);
+                }
+            }
 
-            else if (upBuffer.Count == 0 && upBuffer.Count == 0)
+            else if (downBuffer.Count == 0 && upBuffer.Count == 0)
             {
                 status = "IDLE";
                 currentDirection = "stop";
@@ -268,11 +286,18 @@ namespace Elevator_Controller_CSharp
                             previousDirection = currentDirection;
                             currentFloor += 1;
                         }
+
+                        if (previousFloor != currentFloor)
+                        {
+                            previousFloor = currentFloor;
+                            Console.WriteLine("Elevator {0} has arrived at Floor {1}", ID, currentFloor);
+                        }
                     }
 
                     if (stopList[0] == currentFloor)
                     {
-                        DoorState();
+                        // Console.WriteLine("The Elevator {0} has arrived at Floor {1}",ID, currentFloor);
+                        doorState();
                         stopList.RemoveAt(0);
                     }
                 }
