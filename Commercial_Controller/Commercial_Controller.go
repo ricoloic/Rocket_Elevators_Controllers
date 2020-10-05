@@ -418,6 +418,8 @@ func (e Elevator) changeValue(_stopList []int, _status string, _currentFloor int
 
 //-----------------------------------------------------------------------------//
 
+//_elevator int, _stopList []int, _status string, _currentFloor int, _currentDirection string
+
 func main() {
 
 }
