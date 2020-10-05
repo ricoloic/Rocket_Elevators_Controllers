@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 	"sort"
-	// "sort"
 )
 
 //--------------------------------------------------------//
 
+// Battery is ...
 type Battery struct {
 	columnBattery  int
 	floorAmount    int
@@ -17,7 +17,7 @@ type Battery struct {
 	columnList     []Column
 }
 
-func (b Battery) startBattery(_columnBattery int, _floorAmount int, _basementAmount int, _elevatorColumn int) {
+func (b *Battery) startBattery(_columnBattery int, _floorAmount int, _basementAmount int, _elevatorColumn int) {
 	b.columnBattery = _columnBattery
 	b.floorAmount = _floorAmount
 	b.basementAmount = _basementAmount
@@ -33,7 +33,7 @@ func (b Battery) startBattery(_columnBattery int, _floorAmount int, _basementAmo
 	}
 
 	for i := 0; i < b.columnBattery; i++ {
-		if i != 0 {
+		if i > 0 {
 			previousMax = b.columnList[i-1].maxRange
 		}
 
@@ -43,10 +43,11 @@ func (b Battery) startBattery(_columnBattery int, _floorAmount int, _basementAmo
 	}
 }
 
-func (b Battery) columnSelection(_floor int, _stop int, _direction string) {
+func (b *Battery) columnSelection(_floor int, _stop int, _direction string) {
 	if _stop == b.basementAmount+1 {
 		for i := 0; i < len(b.columnList); i++ {
 			if _floor >= b.columnList[i].minRange && _floor <= b.columnList[i].maxRange {
+				fmt.Println("The column selected is : ", b.columnList[i].id)
 				b.columnList[i].request(_floor, _stop, _direction)
 			}
 		}
@@ -54,18 +55,20 @@ func (b Battery) columnSelection(_floor int, _stop int, _direction string) {
 	} else {
 		for i := 0; i < len(b.columnList); i++ {
 			if _stop >= b.columnList[i].minRange && _stop <= b.columnList[i].maxRange {
+				fmt.Println("The column selected is : ", b.columnList[i].id)
 				b.columnList[i].request(_floor, _stop, _direction)
 			}
 		}
 	}
 }
 
-func (b Battery) changeValue(column int, _elevator int, _stopList []int, _status string, _currentFloor int, _currentDirection string) {
-	b.columnList[column].changeValue(_elevator, _stopList, _status, _currentFloor, _currentDirection)
+func (b *Battery) changeValueB(_column int, _elevator int, _stopList []int, _status string, _currentFloor int, _currentDirection string) {
+	b.columnList[_column].changeValueC(_elevator, _stopList, _status, _currentFloor, _currentDirection)
 }
 
 //--------------------------------------------------------//
 
+// Column is ...
 type Column struct {
 	id             int
 	basementAmount int
@@ -75,7 +78,7 @@ type Column struct {
 	elevatorList   []Elevator
 }
 
-func (c Column) startColumn(_floorAmount int, _basementAmount int, _elevatorColumn int, _floorColumn int, _iteration int, _previousMax int) {
+func (c *Column) startColumn(_floorAmount int, _basementAmount int, _elevatorColumn int, _floorColumn int, _iteration int, _previousMax int) {
 	c.id = _iteration + 1
 	c.basementAmount = _basementAmount
 
@@ -107,41 +110,49 @@ func (c Column) startColumn(_floorAmount int, _basementAmount int, _elevatorColu
 	}
 }
 
-func (c Column) request(_floor int, _stop int, _direction string) {
+func (c *Column) request(_floor int, _stop int, _direction string) {
 	for i := 0; i < len(c.elevatorList); i++ {
 		if _floor == c.basementAmount+1 {
+			//fmt.Println("points up Lobby")
 			c.elevatorList[i].pointsUpdateLobby(_floor, _direction, c.maxRange)
+			fmt.Println("Elevator", c.elevatorList[i].id, "has", c.elevatorList[i].points, "Points")
 
 		} else {
+			//fmt.Println("points up Floor")
 			c.elevatorList[i].pointsUpdateFloor(_floor, _direction, c.maxRange)
+			fmt.Println("Elevator", c.elevatorList[i].id, "has", c.elevatorList[i].points, "Points")
 		}
 	}
 
 	c.elevatorToSend(_floor, _stop, _direction)
 }
 
-func (c Column) elevatorToSend(_floor int, _stop int, _direction string) {
+func (c *Column) elevatorToSend(_floor int, _stop int, _direction string) {
 	sort.Slice(c.elevatorList, func(i, j int) bool {
 		return c.elevatorList[i].points < c.elevatorList[j].points
 	})
 
 	bestOption := c.elevatorList[0]
+
+	fmt.Println("The elevator selected is : ", bestOption.id)
 	bestOption.addStop(_floor, _stop, _direction)
+	bestOption.run()
 	c.runAll()
 }
 
-func (c Column) runAll() {
+func (c *Column) runAll() {
 	for i := 0; i < len(c.elevatorList); i++ {
 		c.elevatorList[i].run()
 	}
 }
 
-func (c Column) changeValue(_elevator int, _stopList []int, _status string, _currentFloor int, _currentDirection string) {
-	c.elevatorList[_elevator].changeValue(_stopList, _status, _currentFloor, _currentDirection)
+func (c *Column) changeValueC(_elevator int, _stopList []int, _status string, _currentFloor int, _currentDirection string) {
+	c.elevatorList[_elevator].changeValueE(_stopList, _status, _currentFloor, _currentDirection)
 }
 
 //--------------------------------------------------------//
 
+// Elevator is ...
 type Elevator struct {
 	id                int
 	floorAmount       int
@@ -158,7 +169,7 @@ type Elevator struct {
 	downBuffer        []int
 }
 
-func (e Elevator) startElevator(_id int, _floorAmount int, _basementAmount int, _minRange int) {
+func (e *Elevator) startElevator(_id int, _floorAmount int, _basementAmount int, _minRange int) {
 	e.status = "IDLE"
 	e.door = "Closed"
 	e.currentFloor = _minRange
@@ -171,18 +182,31 @@ func (e Elevator) startElevator(_id int, _floorAmount int, _basementAmount int, 
 	e.previousDirection = e.currentDirection
 }
 
-func remove(slice []int, s int) []int {
+func (e *Elevator) checkIn(n int) bool {
+	inList := true
+
+	for i := 0; i < len(e.stopList); i++ {
+		if n == e.stopList[i] {
+			inList = false
+		}
+	}
+	return inList
+}
+
+func (e *Elevator) remove(slice []int, s int) []int {
 	return append(slice[:s], slice[s+1:]...)
 }
 
-func (e Elevator) positive(n int) int {
+func (e *Elevator) positive(n int) int {
 	if n < 0 {
 		n *= -1
 	}
 	return n
 }
 
-func (e Elevator) doorState() {
+func (e *Elevator) doorState() {
+	fmt.Println("The Elevator", e.id, "has arrived at Floor :", e.currentFloor)
+
 	e.door = "Open"
 	fmt.Println(e.door)
 
@@ -190,7 +214,7 @@ func (e Elevator) doorState() {
 	fmt.Println(e.door)
 }
 
-func (e Elevator) listSort() {
+func (e *Elevator) listSort() {
 	if e.currentDirection == "Down" {
 		sort.Slice(e.stopList, func(i, j int) bool {
 			return e.stopList[i] > e.stopList[j]
@@ -202,8 +226,7 @@ func (e Elevator) listSort() {
 	}
 }
 
-func (e Elevator) pointsUpdateFloor(_floor int, _direction string, _maxRange int) {
-	expretion := (_floor >= e.currentFloor && _direction == "Up") || (_floor <= e.currentFloor && _direction == "Down")
+func (e *Elevator) pointsUpdateFloor(_floor int, _direction string, _maxRange int) {
 	differenceLastStop := 0
 
 	if e.status != "IDLE" {
@@ -215,21 +238,28 @@ func (e Elevator) pointsUpdateFloor(_floor int, _direction string, _maxRange int
 	e.points = 0
 
 	if e.status == "IDLE" {
-		e.points = _maxRange + differenceFloor + 1
+		e.points = _maxRange + 1 + differenceFloor
 
 	} else if e.currentDirection == _direction {
-		if expretion {
+		if _floor >= e.currentFloor && _direction == "Up" {
 			e.points = differenceFloor + len(e.stopList)
 
-		} else if _floor < e.currentFloor && _direction == "Up" || _floor > e.currentFloor && _direction == "Down" {
+		} else if _floor <= e.currentFloor && _direction == "Down" {
+			e.points = differenceFloor + len(e.stopList)
+
+		} else if _floor < e.currentFloor && _direction == "Up" {
+			e.points = _maxRange + differenceLastStop + len(e.stopList)
+
+		} else if _floor > e.currentFloor && _direction == "Down" {
 			e.points = _maxRange + differenceLastStop + len(e.stopList)
 		}
+
 	} else if e.currentDirection != _direction {
 		e.points = _maxRange*2 + differenceLastStop + len(e.stopList)
 	}
 }
 
-func (e Elevator) pointsUpdateLobby(_floor int, _direction string, _maxRange int) {
+func (e *Elevator) pointsUpdateLobby(_floor int, _direction string, _maxRange int) {
 	differenceLastStop := 0
 
 	if e.status != "IDLE" {
@@ -254,7 +284,7 @@ func (e Elevator) pointsUpdateLobby(_floor int, _direction string, _maxRange int
 	}
 }
 
-func (e Elevator) addStop(_floor int, _stop int, _direction string) {
+func (e *Elevator) addStop(_floor int, _stop int, _direction string) {
 	if _floor == e.basementAmount+1 {
 		if _direction != e.currentDirection && _floor <= e.currentFloor {
 			e.stopList = append(e.stopList, _floor)
@@ -267,10 +297,10 @@ func (e Elevator) addStop(_floor int, _stop int, _direction string) {
 		} else if e.status == "IDLE" {
 			e.stopList = append(e.stopList, _floor)
 
-			if _direction == "up" {
+			if _direction == "Up" {
 				e.upBuffer = append(e.upBuffer, _stop)
 
-			} else if _direction == "down" {
+			} else if _direction == "Down" {
 				e.downBuffer = append(e.downBuffer, _stop)
 			}
 
@@ -280,11 +310,11 @@ func (e Elevator) addStop(_floor int, _stop int, _direction string) {
 				e.upBuffer = append(e.stopList, _stop)
 
 			} else if _floor != e.currentFloor {
-				if _direction == "up" {
+				if _direction == "Up" {
 					e.stopList = append(e.stopList, _floor)
 					e.upBuffer = append(e.upBuffer, _stop)
 
-				} else if _direction == "up" {
+				} else if _direction == "Up" {
 					e.stopList = append(e.stopList, _floor)
 					e.downBuffer = append(e.downBuffer, _stop)
 				}
@@ -302,71 +332,70 @@ func (e Elevator) addStop(_floor int, _stop int, _direction string) {
 		if e.status == "IDLE" {
 			e.stopList = append(e.stopList, _floor)
 
-			if _direction == "up" {
+			if _direction == "Up" {
 				e.upBuffer = append(e.upBuffer, _stop)
 
-			} else if _direction == "down" {
+			} else if _direction == "Down" {
 				e.downBuffer = append(e.downBuffer, _stop)
 			}
 
 		} else if _direction == e.currentDirection {
-			if _direction == "up" && _floor >= e.currentFloor {
+			if _direction == "Up" && _floor >= e.currentFloor {
 				e.stopList = append(e.stopList, _stop)
 				e.stopList = append(e.stopList, _stop)
 
-			} else if _direction == "down" && _floor <= e.currentFloor {
+			} else if _direction == "Down" && _floor <= e.currentFloor {
 				e.stopList = append(e.stopList, _stop)
 				e.stopList = append(e.stopList, _stop)
 
-			} else if _direction == "up" && _floor < e.currentFloor {
+			} else if _direction == "Up" && _floor < e.currentFloor {
 				e.downBuffer = append(e.downBuffer, _floor)
 				e.upBuffer = append(e.upBuffer, _stop)
 
-			} else if _direction == "down" && _floor > e.currentFloor {
+			} else if _direction == "Down" && _floor > e.currentFloor {
 				e.upBuffer = append(e.upBuffer, _floor)
 				e.downBuffer = append(e.downBuffer, _stop)
 			}
 
 		} else if _direction != e.currentDirection {
-			if _direction == "up" {
+			if _direction == "Up" {
 				e.upBuffer = append(e.upBuffer, _floor)
 				e.upBuffer = append(e.upBuffer, _stop)
 
-			} else if _direction == "down" {
+			} else if _direction == "Down" {
 				e.downBuffer = append(e.downBuffer, _floor)
 				e.downBuffer = append(e.downBuffer, _stop)
 			}
 		}
 	}
-
 	e.listSort()
 }
 
-func (e Elevator) stopSwitch() {
+func (e *Elevator) stopSwitch() {
 	if len(e.upBuffer) != 0 && len(e.downBuffer) != 0 {
 		if e.previousDirection == "Up" {
-			e.stopList = append(e.stopList, e.downBuffer...)
+			e.stopList = e.downBuffer
 			for i := 0; i < len(e.downBuffer); i++ {
-				e.downBuffer = remove(e.downBuffer, 0)
+				e.downBuffer = e.remove(e.downBuffer, 0)
 			}
 
 		} else if e.previousDirection == "Down" {
-			e.stopList = append(e.stopList, e.upBuffer...)
+			e.stopList = e.upBuffer
 			for i := 0; i < len(e.upBuffer); i++ {
-				e.upBuffer = remove(e.upBuffer, 0)
+				e.upBuffer = e.remove(e.upBuffer, 0)
 			}
 		}
 
 	} else if len(e.upBuffer) == 0 && len(e.downBuffer) != 0 {
-		e.stopList = append(e.stopList, e.downBuffer...)
+		e.stopList = e.downBuffer
 		for i := 0; i < len(e.downBuffer); i++ {
-			e.downBuffer = remove(e.downBuffer, 0)
+			e.downBuffer = e.remove(e.downBuffer, 0)
 		}
 
 	} else if len(e.upBuffer) != 0 && len(e.downBuffer) == 0 {
-		e.stopList = append(e.stopList, e.upBuffer...)
+		e.stopList = e.upBuffer
 		for i := 0; i < len(e.upBuffer); i++ {
-			e.upBuffer = remove(e.upBuffer, 0)
+			e.upBuffer = e.remove(e.upBuffer, 0)
 		}
 
 	} else if len(e.upBuffer) == 0 && len(e.downBuffer) == 0 {
@@ -375,10 +404,10 @@ func (e Elevator) stopSwitch() {
 	}
 }
 
-func (e Elevator) run() {
-	if len(e.stopList) != 0 {
-		for len(e.stopList) != 0 {
-			for len(e.stopList) != 0 {
+func (e *Elevator) run() {
+	for len(e.stopList) != 0 {
+		if len(e.stopList) != 0 {
+			for e.currentFloor != e.stopList[0] {
 				e.status = "MOVING"
 
 				if e.stopList[0] < e.currentFloor {
@@ -392,34 +421,79 @@ func (e Elevator) run() {
 					e.currentFloor++
 				}
 
-				if e.previousFloor != e.currentFloor {
+				if e.previousFloor != e.currentFloor && e.stopList[0] != e.currentFloor {
+					fmt.Println("Elevator :", e.id, "- Floor :", e.currentFloor)
 					e.previousFloor = e.currentFloor
 				}
 			}
 
 			if e.stopList[0] == e.currentFloor {
 				e.doorState()
-				e.stopList = remove(e.stopList, 0)
+				e.stopList = e.remove(e.stopList, 0)
 			}
+
+		} else {
+			e.stopSwitch()
 		}
 	}
-
 	if len(e.stopList) == 0 {
 		e.stopSwitch()
 	}
 }
 
-func (e Elevator) changeValue(_stopList []int, _status string, _currentFloor int, _currentDirection string) {
-	e.stopList = append(e.stopList, _stopList...)
+func (e *Elevator) changeValueE(_stopList []int, _status string, _currentFloor int, _currentDirection string) {
 	e.status = _status
 	e.currentFloor = _currentFloor
 	e.currentDirection = _currentDirection
+	e.stopList = _stopList
+	e.listSort()
 }
 
 //-----------------------------------------------------------------------------//
 
-//_elevator int, _stopList []int, _status string, _currentFloor int, _currentDirection string
+func scenario(n int) {
+	battery := &Battery{}
+	battery.startBattery(4, 60, 6, 5)
+	ground := battery.basementAmount + 1
+
+	if n == 1 {
+		battery.changeValueB(1, 0, []int{5 + ground}, "MOVING", 20+ground, "Down")
+		battery.changeValueB(1, 1, []int{15 + ground}, "MOVING", 3+ground, "Up")
+		battery.changeValueB(1, 2, []int{ground}, "MOVING", 13+ground, "Down")
+		battery.changeValueB(1, 3, []int{2 + ground}, "MOVING", 15+ground, "Down")
+		battery.changeValueB(1, 4, []int{ground}, "MOVING", 6+ground, "Down")
+
+		battery.columnSelection(ground, 20+ground, "Up")
+
+	} else if n == 2 {
+		battery.changeValueB(2, 0, []int{21 + ground}, "MOVING", ground, "Up")
+		battery.changeValueB(2, 1, []int{28 + ground}, "MOVING", 23+ground, "Up")
+		battery.changeValueB(2, 2, []int{ground}, "MOVING", 33+ground, "Down")
+		battery.changeValueB(2, 3, []int{24 + ground}, "MOVING", 40+ground, "Down")
+		battery.changeValueB(2, 4, []int{ground}, "MOVING", 39+ground, "Down")
+
+		battery.columnSelection(ground, 36+ground, "Up")
+
+	} else if n == 3 {
+		battery.changeValueB(3, 0, []int{ground}, "MOVING", 58+ground, "Down")
+		battery.changeValueB(3, 1, []int{60 + ground}, "MOVING", 50+ground, "Up")
+		battery.changeValueB(3, 2, []int{58 + ground}, "MOVING", 46+ground, "Up")
+		battery.changeValueB(3, 3, []int{54 + ground}, "MOVING", ground, "Up")
+		battery.changeValueB(3, 4, []int{ground}, "MOVING", 60+ground, "Down")
+
+		battery.columnSelection(54+ground, ground, "Down")
+
+	} else if n == 4 {
+		battery.changeValueB(0, 0, []int{}, "IDLE", 3, "Stop")
+		battery.changeValueB(0, 1, []int{}, "IDLE", ground, "Stop")
+		battery.changeValueB(0, 2, []int{2}, "MOVING", 4, "Down")
+		battery.changeValueB(0, 3, []int{ground}, "MOVING", 1, "Up")
+		battery.changeValueB(0, 4, []int{1}, "MOVING", 6, "Down")
+
+		battery.columnSelection(4, ground, "Up")
+	}
+}
 
 func main() {
-
+	scenario(4)
 }

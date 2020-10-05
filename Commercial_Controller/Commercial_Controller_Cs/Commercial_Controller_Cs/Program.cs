@@ -5,8 +5,6 @@ namespace Elevator_Controller_CSharp
 {
     class Programa
     {
-
-
         static void Main(string[] args)
         {
             Battery battery = new Battery(4, 60, 6, 5);
