@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	scenario(2)
+	scenario(4)
 }
 
 //--------------------------------------------------------//
@@ -450,21 +450,30 @@ func (e *Elevator) run() {
 					e.currentDirection = "Down"
 					e.previousDirection = e.currentDirection
 					e.currentFloor--
+					// e.previousFloor = e.currentFloor
 
 				} else if e.stopList[0] > e.currentFloor {
 					e.currentDirection = "Up"
 					e.previousDirection = e.currentDirection
 					e.currentFloor++
+					// e.previousFloor = e.currentFloor
+
 				}
 
 				if e.previousFloor != e.currentFloor && e.stopList[0] != e.currentFloor && e.currentFloor != 0 {
-					fmt.Println("Elevator :", e.id, "- Floor :", e.currentFloor)
-					e.previousFloor = e.currentFloor
+					if e.previousFloor == 0 {
+						e.previousFloor = e.currentFloor
+					} else {
+						fmt.Println("Elevator :", e.id, "- Floor :", e.currentFloor)
+					}
 				}
 			}
 
 			if e.stopList[0] == e.currentFloor && e.currentFloor != 0 {
-				e.doorState()
+				if e.previousFloor != 0 {
+					e.doorState()
+					e.previousFloor = 0
+				}
 				e.stopList = e.remove(e.stopList, 0)
 			} else if e.stopList[0] == e.currentFloor && e.currentFloor == 0 {
 				e.stopList = e.remove(e.stopList, 0)
