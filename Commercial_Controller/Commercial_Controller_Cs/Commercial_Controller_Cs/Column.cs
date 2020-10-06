@@ -37,13 +37,13 @@ namespace Elevator_Controller_CSharp
             {
                 if (_iteration == 0)
                 {
-                    maxRange = _floorColumn;
+                    maxRange = _basementAmount;
                     minRange = 1;
                 }
 
                 else
                 {
-                    maxRange = _iteration * _floorColumn + 1;
+                    maxRange = _iteration * _floorColumn;
                     minRange = _previousMax + 1;
                 }
             }
@@ -74,7 +74,7 @@ namespace Elevator_Controller_CSharp
             Elevator bestOption = elevatorList[0];
 
             bestOption.addStop(_floor, _stop, _direction);
-            Console.WriteLine("Request from Floor {0} and goint to Floor {1}", _floor, _stop);
+            Console.WriteLine("Request from Floor {0} and going to Floor {1}", _floor, _stop);
             Console.WriteLine("the elevator chosen is : {0}", bestOption.ID);
             runAll();
         }
