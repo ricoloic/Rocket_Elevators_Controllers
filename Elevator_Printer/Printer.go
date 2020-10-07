@@ -29,17 +29,26 @@ type Printer struct {
 func (p *Printer) createPointing(_id []int, _points []int) {
 	fmt.Println("")
 
-	// count := p.countInt(_id[0]) + p.countInt(_points[0])
+	hightestCount := 0
 
 	for i := 0; i < len(_points); i++ {
-		fmt.Println("		      ELEVATOR", _id[i], "- HAS", _points[i], "pts")
-		fmt.Println("")
+		countT := p.countInt(_id[i]) + p.countInt(_points[i])
+
+		if hightestCount < countT {
+			hightestCount = countT
+		}
+	}
+
+	for i := 0; i < len(_points); i++ {
+		// p.elevatorLine
 	}
 
 	p.bestElevatorLine(_id[0], _points[0])
 }
 
-func (p *Printer) bestElevatorLine(_id int, points int) {
+// 		fmt.Println("		      ELEVATOR", _id[i], "- HAS", _points[i], "pts")
+
+func (p *Printer) bestElevatorLine(_id int, _points int) {
 	fmt.Println("		      ELEVATOR", _id, "- WITH", _points, "pts")
 }
 
@@ -129,6 +138,26 @@ func (p *Printer) topBottomLine(_size string) {
 		fmt.Println("		+-------------------------------------+")
 	} else if _size == "4" {
 		fmt.Println("		+--------------------------------------+")
+	} else if _size == "5" {
+		fmt.Println("		+---------------------------------------+")
+	} else if _size == "6" {
+		fmt.Println("		+----------------------------------------+")
+	} else if _size == "7" {
+		fmt.Println("		+-----------------------------------------+")
+	} else if _size == "8" {
+		fmt.Println("		+------------------------------------------+")
+	} else if _size == "9" {
+		fmt.Println("		+-------------------------------------------+")
+	} else if _size == "10" {
+		fmt.Println("		+--------------------------------------------+")
+	} else if _size == "11" {
+		fmt.Println("		+---------------------------------------------+")
+	} else if _size == "12" {
+		fmt.Println("		+----------------------------------------------+")
+	} else if _size == "13" {
+		fmt.Println("		+-----------------------------------------------+")
+	} else if _size == "14" {
+		fmt.Println("		+------------------------------------------------+")
 	}
 }
 
@@ -154,35 +183,44 @@ func (p *Printer) elevatorLine(_id int, _points int) {
 
 	//fmt.Println(countI, countP)
 
-	if countP == "1" {
 		if countI == "1" {
-			fmt.Println("		      ELEVATOR", _id, "- HAS:", _points, "pts            ")
+			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts           |")
 		} else if countI == "2" {
-			fmt.Println("		      ELEVATOR", _id, "- HAS:", _points, "pts           ")
+			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts          |")
 		} else if countI == "3" {
-			fmt.Println("		      ELEVATOR", _id, "- HAS:", _points, "pts          ")
+			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts         |")
 		} else if countI == "4" {
-			fmt.Println("		      ELEVATOR", _id, "- HAS:", _points, "pts         ")
+			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts        |")
 		}
 	} else if countP == "2" {
 		if countI == "1" {
-			fmt.Println("		      ELEVATOR", _id, "- HAS:", _points, "pts           ")
+			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts          |")
 		} else if countI == "2" {
-			fmt.Println("		      ELEVATOR", _id, "- HAS:", _points, "pts          ")
+			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts         |")
 		} else if countI == "3" {
-			fmt.Println("		      ELEVATOR", _id, "- HAS:", _points, "pts         ")
+			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts        |")
 		} else if countI == "4" {
-			fmt.Println("		      ELEVATOR", _id, "- HAS:", _points, "pts        ")
+			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts       |")
 		}
 	} else if countP == "3" {
 		if countI == "1" {
-			fmt.Println("		      ELEVATOR", _id, "- HAS:", _points, "pts          ")
+			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts         |")
 		} else if countI == "2" {
-			fmt.Println("		      ELEVATOR", _id, "- HAS:", _points, "pts         ")
+			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts        |")
 		} else if countI == "3" {
-			fmt.Println("		      ELEVATOR", _id, "- HAS:", _points, "pts        ")
+			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts       |")
 		} else if countI == "4" {
-			fmt.Println("		      ELEVATOR", _id, "- HAS:", _points, "pts       ")
+			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts      |")
+		}
+	} else if countP == "4" {
+		if countI == "1" {
+			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts        |")
+		} else if countI == "2" {
+			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts       |")
+		} else if countI == "3" {
+			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts      |")
+		} else if countI == "4" {
+			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts     |")
 		}
 	}
 }

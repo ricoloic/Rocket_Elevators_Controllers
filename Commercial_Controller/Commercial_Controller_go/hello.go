@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	scenarioPreset(1)
+	scenarioPreset(2)
 }
 
 //--------------------------------------------------------//
@@ -234,6 +234,10 @@ func (e *Elevator) checkIn(n int) bool {
 		}
 	}
 
+	if n == e.currentFloor {
+		inList = true
+	}
+
 	return inList
 }
 
@@ -431,8 +435,10 @@ func (e *Elevator) addStop(_floor int, _stop int, _direction string) {
 			}
 		}
 	}
+
 	e.stopList = e.remove0fromList(e.stopList)
-	fmt.Println(e.stopList)
+	e.upBuffer = e.remove0fromList(e.upBuffer)
+	e.downBuffer = e.remove0fromList(e.downBuffer)
 	e.listSort()
 }
 
@@ -443,12 +449,14 @@ func (e *Elevator) stopSwitch() {
 			for i := 0; i < len(e.downBuffer); i++ {
 				e.downBuffer = e.remove(e.downBuffer, 0)
 			}
+			// e.previousDirection = "Down"
 
 		} else if e.previousDirection == "Down" {
 			e.stopList = e.upBuffer
 			for i := 0; i < len(e.upBuffer); i++ {
 				e.upBuffer = e.remove(e.upBuffer, 0)
 			}
+			// e.previousDirection = "Up"
 		}
 
 	} else if len(e.upBuffer) == 0 && len(e.downBuffer) != 0 {
@@ -456,12 +464,14 @@ func (e *Elevator) stopSwitch() {
 		for i := 0; i < len(e.downBuffer); i++ {
 			e.downBuffer = e.remove(e.downBuffer, 0)
 		}
+		// e.previousDirection = "Down"
 
 	} else if len(e.upBuffer) != 0 && len(e.downBuffer) == 0 {
 		e.stopList = e.upBuffer
 		for i := 0; i < len(e.upBuffer); i++ {
 			e.upBuffer = e.remove(e.upBuffer, 0)
 		}
+		// e.previousDirection = "Up"
 
 	} else if len(e.upBuffer) == 0 && len(e.downBuffer) == 0 {
 		e.status = "IDLE"
@@ -471,49 +481,44 @@ func (e *Elevator) stopSwitch() {
 
 func (e *Elevator) run() {
 	for len(e.stopList) != 0 {
-		if len(e.stopList) != 0 {
-			for e.currentFloor != e.stopList[0] {
-				e.status = "MOVING"
+		// e.previousFloor = e.currentFloor
 
-				if e.stopList[0] < e.currentFloor {
-					e.currentDirection = "Down"
-					e.previousDirection = e.currentDirection
-					e.currentFloor--
-					e.previousFloor = e.currentFloor
+		for e.currentFloor != e.stopList[0] {
+			e.status = "MOVING"
 
-				} else if e.stopList[0] > e.currentFloor {
-					e.currentDirection = "Up"
-					e.previousDirection = e.currentDirection
-					e.currentFloor++
-					e.previousFloor = e.currentFloor
+			if e.stopList[0] < e.currentFloor {
+				e.currentDirection = "Down"
+				// e.previousDirection = e.currentDirection
+				e.currentFloor--
 
-				}
-
-				if e.previousFloor != e.currentFloor && e.stopList[0] != e.currentFloor && e.currentFloor != 0 {
-					switch e.previousDirection {
-					case "Up":
-						e.p.upArrow("1")
-					case "Down":
-						e.p.upArrow("1")
-					}
-				} else if e.currentFloor
-			}
-
-			if e.stopList[0] == e.currentFloor && e.currentFloor != 0 {
-				if e.previousFloor != 0 {
-					e.doorState()
-					e.previousFloor = 0
-				}
-				e.stopList = e.remove(e.stopList, 0)
-			} else if e.stopList[0] == e.currentFloor && e.currentFloor == 0 {
-				e.stopList = e.remove(e.stopList, 0)
+			} else if e.stopList[0] > e.currentFloor {
+				e.currentDirection = "Up"
+				// e.previousDirection = e.currentDirection
+				e.currentFloor++
 			}
 		}
 
-		if len(e.stopList) == 0 {
-			e.stopSwitch()
+		if e.currentFloor == e.stopList[0] && e.previousFloor != e.currentFloor {
+			if len(e.stopList) > 1 {
+				fmt.Println("")
+				e.p.createState(e.id, e.previousFloor, e.status, e.stopList[0])
+				e.doorState()
+				e.previousFloor = e.stopList[0]
+				e.stopList = e.remove(e.stopList, 0)
+
+			} else {
+				fmt.Println("")
+				e.p.createState(e.id, e.previousFloor, e.status, e.stopList[0])
+				e.doorState()
+				e.previousFloor = e.stopList[0]
+				e.stopList = e.remove(e.stopList, 0)
+			}
+
+		} else if len(e.stopList) != 0 && e.previousFloor == e.currentFloor {
+			e.stopList = e.remove(e.stopList, 0)
 		}
 	}
+
 	if len(e.stopList) == 0 {
 		e.stopSwitch()
 	}
@@ -608,7 +613,7 @@ func (p *Printer) positive(n int) int {
 
 func (p *Printer) createState(_id int, _floor int, _status string, _stop int) {
 	p.topBottomLine(_status)
-	p.innerArrowLine(_status)
+	p.innerArrowElevatorLine(_status)
 	p.emptyDoubleLine(_status)
 	p.idLine(_id, _status)
 	p.floorLine(_floor, _status)
@@ -646,11 +651,12 @@ func (p *Printer) createPointing(_id []int, _points []int) {
 	// count := p.countInt(_id[0]) + p.countInt(_points[0])
 
 	for i := 0; i < len(_points); i++ {
-		fmt.Println("		      ELEVATOR", _id[i], "- HAS", _points[i], "pts")
+		fmt.Println("		ELEVATOR", _id[i], "- HAS", _points[i], "pts")
 		fmt.Println("")
 	}
 
 	p.bestElevatorLine(_id[0], _points[0])
+	fmt.Println("")
 }
 
 func (p *Printer) bestElevatorLine(_id int, _points int) {
@@ -722,6 +728,22 @@ func (p *Printer) innerArrowLine(_size string) {
 		fmt.Println("		| +--->                         <---+ |")
 	} else if _size == "4" {
 		fmt.Println("		| +--->                          <---+ |")
+	}
+}
+
+func (p *Printer) innerArrowElevatorLine(_size string) {
+	if _size == "IDLE" {
+		fmt.Println("		| +--->     Elevator     <---+ |")
+	} else if _size == "MOVING" {
+		fmt.Println("		| +--->      Elevator      <---+ |")
+	} else if _size == "1" {
+		fmt.Println("		| +--->        Elevator       <---+ |")
+	} else if _size == "2" {
+		fmt.Println("		| +--->        Elevator        <---+ |")
+	} else if _size == "3" || _size == "MAINTENANCE" {
+		fmt.Println("		| +--->         Elevator        <---+ |")
+	} else if _size == "4" {
+		fmt.Println("		| +--->         Elevator         <---+ |")
 	}
 }
 
