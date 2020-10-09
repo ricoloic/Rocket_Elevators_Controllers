@@ -10,68 +10,121 @@ import (
 
 // Column is ...
 type Column struct {
-	ID             string
-	basementAmount int
-	MaxRange       int
-	MinRange       int
-	status         string
-	elevatorList   []elevator.Elevator
+	ID               string
+	basementAmount   int
+	MaxRange         int
+	MinRange         int
+	floorPerColumn   int
+	status           string
+	elevatorList     []elevator.Elevator
+	lobby            bool
+	atFirstIteration bool
+	bestOption       *elevator.Elevator
 }
 
-// StartColumn ...
-func (c *Column) StartColumn(_floorAmount int, _basementAmount int, _elevatorColumn int, _floorColumn int, _i int, _previousMax int, _remainder int, _letters []string) {
-	c.ID = _letters[_i]
-	c.basementAmount = _basementAmount
+// StartColumn will call all the method needed for a column to be created
+func (c *Column) StartColumn(floorAmount int, basementAmount int, elevatorColumn int, floorColumn int, i int, previousMax int, remainder int, id string) {
+	c.initValue(id, basementAmount, floorColumn)
+	c.setRange(i, previousMax, remainder)
+	c.createElevatorList(i, elevatorColumn, floorAmount)
+}
 
-	if c.basementAmount == 0 {
-		if _i == 0 {
-			c.MaxRange = _floorColumn
-			c.MinRange = 1
+// initValue will be use to set the some initial value to the column (ID, basementAmount and floorPerColumn)
+func (c *Column) initValue(id string, basementAmount int, floorColumn int) {
+	c.ID = id
+	c.basementAmount = basementAmount
+	c.floorPerColumn = floorColumn
+}
 
-		} else {
-			c.MaxRange = _i*_floorColumn + _remainder
-			c.MinRange = _previousMax + 1
-		}
-
-	} else {
-		if _i == 0 {
-			c.MaxRange = -1
-			c.MinRange = -c.basementAmount
-
-		} else if _previousMax == -1 {
-			c.MaxRange = _i * _floorColumn
-			c.MinRange = _previousMax + 2
-		} else {
-			c.MaxRange = _i*_floorColumn + _remainder
-			c.MinRange = _previousMax + 1
-		}
-	}
-
-	for i := 0; i < _elevatorColumn; i++ {
+// createElevatorList will add Elevator(s) to the column
+func (c *Column) createElevatorList(i int, elevatorColumn int, floorAmount int) {
+	for i := 0; i < elevatorColumn; i++ {
 		elev := &elevator.Elevator{}
-		elev.StartElevator(c.ID+strconv.Itoa(i+1), _floorAmount, c.basementAmount, c.MinRange)
+		elev.StartElevator(c.ID+strconv.Itoa(i+1), floorAmount, c.basementAmount, c.MinRange)
 		c.elevatorList = append(c.elevatorList, *elev)
 	}
 }
 
-func (c *Column) addStop(_floor int, _stop int, _direction string, n int) {
-	if n == 1 {
-		c.elevatorList[0].AddStopFloor(_floor, _stop, _direction)
+// setRange will call the a method to make the min and max range of the column
+func (c *Column) setRange(i int, previousMax int, remainder int) {
+	if c.basementAmount == 0 {
+		c.ifNoBasement(i, remainder, previousMax)
 	} else {
-		c.elevatorList[0].AddStopLobby(_floor, _stop, _direction)
+		c.ifBasement(i, remainder, previousMax)
 	}
-
-	c.elevatorList[0].All0Remove()
-	c.elevatorList[0].ListSort()
 }
 
-func (c *Column) elevatorToSend() {
+// ifNoBasement set the ranges of the column for a battery without any basement
+func (c *Column) ifNoBasement(i int, remainder int, previousMax int) {
+	if i == 0 {
+		c.MaxRange = c.floorPerColumn
+		c.MinRange = 1
+
+	} else {
+		c.MaxRange = i*c.floorPerColumn + remainder
+		c.MinRange = previousMax + 1
+	}
+}
+
+// ifBasement set the ranges of the column for a battery with basement
+func (c *Column) ifBasement(i int, remainder int, previousMax int) {
+	if i == 0 {
+		c.MaxRange = -1
+		c.MinRange = -c.basementAmount
+
+	} else if previousMax == -1 {
+		c.MaxRange = i * c.floorPerColumn
+		c.MinRange = previousMax + 2
+	} else {
+		c.MaxRange = i*c.floorPerColumn + remainder
+		c.MinRange = previousMax + 1
+	}
+}
+
+// InitializeRequest will call methods to make a request possible
+func (c *Column) InitializeRequest(_floor int, _stop int, _direction string) {
+	c.isAtLobby(_floor)
+	c.updatePoints(_floor, _direction)
+	c.sortByPoint()
+	c.initPointsPrints()
+	c.addStop(_floor, _stop, _direction)
+	c.runAll()
+}
+
+// isAtLobby will set the boolean variable lobby to true if the request is made from the lobby
+func (c *Column) isAtLobby(_floor int) {
+	if _floor == 1 {
+		c.lobby = true
+	} else {
+		c.lobby = false
+	}
+}
+
+// updatePoints will call the method for updating the points of every elevator in the column
+func (c *Column) updatePoints(_floor int, _direction string) {
+	for i := 0; i < len(c.elevatorList); i++ {
+		if c.lobby {
+			c.elevatorList[i].PointsUpdateLobby(_floor, _direction, c.MaxRange, c.MinRange)
+
+		} else {
+			c.elevatorList[i].PointsUpdateFloor(_floor, _direction, c.MaxRange, c.MinRange)
+		}
+	}
+}
+
+// sortByPoint will reorganize the list of elevators in such a way that the first index of the list is the elevator with the fewest points then set the variable bestOption to the fist index in the list of elevators
+func (c *Column) sortByPoint() {
 	sort.Slice(c.elevatorList, func(i, j int) bool {
 		return c.elevatorList[i].Points < c.elevatorList[j].Points
 	})
 
-	points := []string{}
-	IDs := []string{}
+	c.bestOption = &c.elevatorList[0]
+}
+
+// initPointsPrints will create two list, one for the elevators id and one for there points then call the printing of the points for each elevator
+func (c *Column) initPointsPrints() {
+	var IDs []string
+	var points []string
 
 	for i := 0; i < len(c.elevatorList); i++ {
 		IDs = append(IDs, c.elevatorList[i].ID)
@@ -81,34 +134,23 @@ func (c *Column) elevatorToSend() {
 	prints.CreatePointing(c.ID, IDs, points)
 }
 
+// addStop will call the method of the bestOption to add the request to its list
+func (c *Column) addStop(_floor int, _stop int, _direction string) {
+	if !c.lobby {
+		c.bestOption.AddStopFloor(_floor, _stop, _direction)
+	} else {
+		c.bestOption.AddStopLobby(_floor, _stop, _direction)
+	}
+}
+
+// runAll will call all the methods needed to make all the elevator to move
 func (c *Column) runAll() {
 	for i := 0; i < len(c.elevatorList); i++ {
+		c.elevatorList[i].All0Remove()
+		c.elevatorList[i].ListSort()
 		c.elevatorList[i].Run()
 		fmt.Println()
 	}
-}
-
-// Request ...
-func (c *Column) Request(_floor int, _stop int, _direction string) {
-	n := 1
-
-	for i := 0; i < len(c.elevatorList); i++ {
-		if _floor == 1 {
-			c.elevatorList[i].PointsUpdateLobby(_floor, _direction, c.MaxRange, c.MinRange)
-			n = 0
-
-		} else {
-			c.elevatorList[i].PointsUpdateFloor(_floor, _direction, c.MaxRange, c.MinRange)
-		}
-	}
-
-	c.requestToElev(_floor, _stop, _direction, n)
-}
-
-func (c *Column) requestToElev(_floor int, _stop int, _direction string, n int) {
-	c.elevatorToSend()
-	c.addStop(_floor, _stop, _direction, n)
-	c.runAll()
 }
 
 // ChangeValueC ...

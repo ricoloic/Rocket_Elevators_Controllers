@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"go_controller/controller"
 	"strconv"
+	"time"
 )
 
-func colors(color string, value string) string {
+// Colors ...
+func Colors(color string, value string) string {
 	if color == "red" {
 		return string("\033[31m") + value + string("\033[0m")
 	} else if color == "green" {
@@ -74,22 +76,24 @@ func CreatePointing(_columnID string, _id []string, _points []string) {
 	fmt.Println("")
 
 	for i := 0; i < len(_points); i++ {
-		fmt.Println("		ELEVATOR " + colors("red", _id[i]) + " - HAS " + colors("yellow", _points[i]) + " pts")
+		fmt.Println("		ELEVATOR " + Colors("red", _id[i]) + " - HAS " + Colors("yellow", _points[i]) + " pts")
 		fmt.Println("")
 	}
 
 	BestElevatorLine(_id[0], _points[0])
 	fmt.Println("")
+
+	controller.Wait(4)
 }
 
 // BestElevatorLine ...
 func BestElevatorLine(_id string, _points string) {
-	fmt.Println("		THE BEST ELEVATOR IS ELEVATOR " + colors("red", _id) + " WITH " + colors("yellow", _points) + " pts")
+	fmt.Println("		THE BEST ELEVATOR IS ELEVATOR " + Colors("red", _id) + " WITH " + Colors("yellow", _points) + " pts")
 }
 
 // ColumnSelectedLine ...
 func ColumnSelectedLine(_columnID string) {
-	fmt.Println("		THE COLUMN SELECTED IS COLUMN " + colors("red", _columnID))
+	fmt.Println("		THE COLUMN SELECTED IS COLUMN " + Colors("red", _columnID))
 }
 
 // CountStr ...
@@ -298,7 +302,7 @@ func DownArrow(_size string) {
 }
 
 // DoorOpen ...
-func DoorOpen(_size string) {
+func DoorOpen(_size string, graph ...string) {
 	if _size == "1" || _size == "2" {
 		DoorTopBottomLine(_size)
 		DoorMiddleLine(_size)
@@ -322,13 +326,16 @@ func DoorOpen(_size string) {
 		}
 		DoorMiddleLine(_size)
 		DoorTopBottomLine(_size)
-	} else {
-		fmt.Println("\n		The size entered for the door opening ain't good change it and try again !")
 	}
+
+	if len(graph) == 0 {
+		graph = append(graph, "█")
+	}
+	ProgressBar(120, 3, "OPENING", graph[0])
 }
 
 // DoorClose ...
-func DoorClose(_size string) {
+func DoorClose(_size string, graph ...string) {
 	if _size == "1" || _size == "2" {
 		DoorTopBottomLine(_size)
 		DoorMiddleLine(_size)
@@ -352,9 +359,30 @@ func DoorClose(_size string) {
 		}
 		DoorMiddleLine(_size)
 		DoorTopBottomLine(_size)
-	} else {
-		fmt.Println("\n		The size entered for the door opening ain't good change it and try again !")
 	}
+
+	if len(graph) == 0 {
+		graph = append(graph, "█")
+	}
+	ProgressBar(120, 3, "CLOSING", graph[0])
+}
+
+// ProgressBar ...
+func ProgressBar(_speed int, _timeSecond int, state string, graph string) {
+	speed := _speed
+	timeSecond := _timeSecond
+	done := true
+	go func() {
+		controller.Wait(timeSecond)
+		done = false
+	}()
+
+	fmt.Printf("		" + state + " ")
+	for done {
+		time.Sleep(time.Duration(speed) * time.Millisecond)
+		fmt.Printf(graph)
+	}
+	fmt.Println()
 }
 
 // LeftArrowLine ...
@@ -429,7 +457,7 @@ func FloorArivedLine(_floor int) {
 // IDLine ...
 func IDLine(_id string, _status string) {
 	count := strconv.Itoa(len(_id))
-	ID := colors("red", _id)
+	ID := Colors("red", _id)
 
 	if _status == "IDLE" {
 		if count == "1" {

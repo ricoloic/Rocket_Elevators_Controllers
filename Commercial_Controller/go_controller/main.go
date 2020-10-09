@@ -1,7 +1,11 @@
 package main
 
-import "go_controller/controller/preset"
+import (
+	"go_controller/controller/preset"
+)
 
 func main() {
-	preset.CodeBoxx(3)
+	// for no animation look in controller/controller.go
+
+	preset.CodeBoxx(3) // calling a scenario to take place (1 to 4)
 }

@@ -93,13 +93,10 @@ func (e *Elevator) Remove(slice []int, s int) []int {
 func (e *Elevator) DoorState() {
 	prints.CreateArrival(e.CurrentFloor)
 
+	prints.DoorOpen("1", "_")
 	e.door = "Open"
-	basic.Wait(2)
-	prints.DoorOpen("1")
-
-	basic.Wait(5)
+	prints.DoorClose("1", "_")
 	e.door = "Closed"
-	prints.DoorClose("1")
 }
 
 // ListSort ...
@@ -178,8 +175,7 @@ func (e *Elevator) PointsUpdateLobby(_floor int, _direction string, _maxRange in
 	}
 }
 
-// AllCheck ...
-func (e *Elevator) AllCheck(num int) int {
+func (e *Elevator) allCheck(num int) int {
 	if e.CheckIn(num) {
 		num = 0
 	}
@@ -188,8 +184,8 @@ func (e *Elevator) AllCheck(num int) int {
 
 // AddStopLobby ...
 func (e *Elevator) AddStopLobby(_floor int, _stop int, _direction string) {
-	floor := e.AllCheck(_floor)
-	stop := e.AllCheck(_stop)
+	floor := e.allCheck(_floor)
+	stop := e.allCheck(_stop)
 
 	if _direction != e.currentDirection && _floor <= e.CurrentFloor {
 		e.StopList = append(e.StopList, floor)
@@ -237,8 +233,8 @@ func (e *Elevator) AddStopLobby(_floor int, _stop int, _direction string) {
 
 // AddStopFloor ...
 func (e *Elevator) AddStopFloor(_floor int, _stop int, _direction string) {
-	floor := e.AllCheck(_floor)
-	stop := e.AllCheck(_stop)
+	floor := e.allCheck(_floor)
+	stop := e.allCheck(_stop)
 
 	if e.Status == "IDLE" {
 		e.StopList = append(e.StopList, floor)
@@ -276,8 +272,7 @@ func (e *Elevator) AddStopFloor(_floor int, _stop int, _direction string) {
 	}
 }
 
-// StopSwitch ...
-func (e *Elevator) StopSwitch() {
+func (e *Elevator) stopSwitch() {
 	if len(e.upBuffer) != 0 && len(e.downBuffer) != 0 {
 		if e.previousDirection == "Up" {
 			e.StopList = e.downBuffer
@@ -339,7 +334,7 @@ func (e *Elevator) Run() {
 	}
 
 	if len(e.StopList) == 0 {
-		e.StopSwitch()
+		e.stopSwitch()
 	}
 }
 
