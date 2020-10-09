@@ -3,12 +3,14 @@ package preset
 import (
 	"go_controller/controller/battery"
 	"go_controller/controller/prints"
+	"go_controller/controller/prints/board"
 )
 
 // CodeBoxx ...
 func CodeBoxx(n int) {
 	battery := &battery.Battery{}
-	battery.StartBattery(4, 60, 6, 5)
+	battery.StartBattery(1, 4, 60, 6, 5)
+	board := &board.Board{}
 
 	// ||=========> BASEMENT COLUMN #1 <=========||
 	battery.ChangeValueB(0, 0, "IDLE", -4, []int{}, "Stop")
@@ -37,6 +39,8 @@ func CodeBoxx(n int) {
 	battery.ChangeValueB(3, 2, "MOVING", 46, []int{58}, "Up")
 	battery.ChangeValueB(3, 3, "MOVING", 1, []int{54}, "Up")
 	battery.ChangeValueB(3, 4, "MOVING", 60, []int{1}, "Down")
+
+	board.PrintBattery(battery)
 
 	f := []int{}
 	d := ""

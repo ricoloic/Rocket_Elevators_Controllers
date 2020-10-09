@@ -8,6 +8,7 @@ import (
 
 // Battery ...
 type Battery struct {
+	ID             int
 	columnBattery  int
 	floorAmount    int
 	basementAmount int
@@ -15,12 +16,11 @@ type Battery struct {
 	floorPerColumn int
 	Letters        []string
 	ColumnList     []column.Column
-	columnID       string
-	t              int
 }
 
 // StartBattery will set some initial value to the battery and call the method to create all the column that the battery will countain
-func (b *Battery) StartBattery(_columnBattery int, _floorAmount int, _basementAmount int, _elevatorColumn int) {
+func (b *Battery) StartBattery(id int, _columnBattery int, _floorAmount int, _basementAmount int, _elevatorColumn int) {
+	b.ID = id
 	b.columnBattery = _columnBattery
 	b.floorAmount = _floorAmount
 	b.basementAmount = _basementAmount
@@ -34,19 +34,21 @@ func (b *Battery) StartBattery(_columnBattery int, _floorAmount int, _basementAm
 func (b *Battery) createColumnList() {
 	remainder := b.calcRemainder()
 	lastRemain := 0
+	var columnID string
+	var t int
 
 	for i := 0; i < b.columnBattery; i++ {
 		lastRemain = b.calcLastRemain(i, remainder)
 		prevMax := b.calcPrevMax(i)
-		b.calcColumnID(i)
+		columnID, t = b.calcColumnID(i, t)
 
 		col := &column.Column{}
-		col.StartColumn(b.floorAmount, b.basementAmount, b.elevatorColumn, b.floorPerColumn, i, prevMax, lastRemain, b.columnID)
+		col.StartColumn(b.floorAmount, b.basementAmount, b.elevatorColumn, b.floorPerColumn, i, prevMax, lastRemain, columnID)
 		b.ColumnList = append(b.ColumnList, *col)
 	}
 }
 
-// calcRemainder will set and return the
+// calcRemainder will set and return the remainder to add to the last column
 func (b *Battery) calcRemainder() int {
 	remainder := 0
 
@@ -62,14 +64,16 @@ func (b *Battery) calcRemainder() int {
 	return remainder
 }
 
+// calcLastRemain will return the remainder if the loop for creating the columns is at the last iteration
 func (b *Battery) calcLastRemain(i int, remainder int) int {
 	if i == b.columnBattery-1 {
 		return remainder
-	} else {
-		return 0
 	}
+
+	return 0
 }
 
+// calcPrevMax will return the maxRange from the column at the previous iteration
 func (b *Battery) calcPrevMax(i int) int {
 	var previousMax int
 
@@ -80,20 +84,21 @@ func (b *Battery) calcPrevMax(i int) int {
 	return previousMax
 }
 
-func (b *Battery) calcColumnID(i int) {
+// calcColumnID will return the the id of the column at its creation -- A - Z , 1A - 1Z , 2A - 2Z , ...
+func (b *Battery) calcColumnID(i int, t int) (string, int) {
 	if i > 25 {
 		iInt := i % 26
 		if iInt == 0 {
-			b.t++
+			t++
 		}
-		bString := strconv.Itoa(b.t)
-		b.columnID = bString + b.Letters[i%26]
-	} else {
-		b.columnID = b.Letters[i]
+		bString := strconv.Itoa(t)
+		return bString + b.Letters[i%26], t
 	}
+
+	return b.Letters[i], t
 }
 
-// ColumnSelection ...
+// ColumnSelection is used to for sending the request to the good column
 func (b *Battery) ColumnSelection(_floor int, _stop int, _direction string) {
 	for i := 0; i < len(b.ColumnList); i++ {
 		if _stop == 1 {

@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+// don't look for comments in there, you won't be seeing any
+
 // Colors ...
 func Colors(color string, value string) string {
 	if color == "red" {
@@ -615,5 +617,22 @@ func StatusLine(_status string) {
 		fmt.Println("		| |       Status:", "MOVING", "      | |")
 	} else if _status == "MAINTENANCE" {
 		fmt.Println("		| |       Status:", "MAINTENANCE", "      | |")
+	}
+}
+
+// LineLine ...
+func LineLine(i int) {
+	if i == 1 {
+		fmt.Println("		|")
+	} else if i == 2 {
+		fmt.Println("		|   |")
+	} else if i == 3 {
+		fmt.Println("		|       |")
+	} else if i == 4 {
+		fmt.Println("		|           |")
+	} else if i == 5 {
+		fmt.Println("		|               |")
+	} else if i == 6 {
+		fmt.Println("		|                   |")
 	}
 }

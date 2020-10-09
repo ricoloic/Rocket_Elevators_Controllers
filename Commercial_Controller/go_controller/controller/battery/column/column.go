@@ -15,8 +15,8 @@ type Column struct {
 	MaxRange         int
 	MinRange         int
 	floorPerColumn   int
-	status           string
-	elevatorList     []elevator.Elevator
+	Status           string
+	ElevatorList     []elevator.Elevator
 	lobby            bool
 	atFirstIteration bool
 	bestOption       *elevator.Elevator
@@ -34,6 +34,7 @@ func (c *Column) initValue(id string, basementAmount int, floorColumn int) {
 	c.ID = id
 	c.basementAmount = basementAmount
 	c.floorPerColumn = floorColumn
+	c.Status = "ACTIVE"
 }
 
 // createElevatorList will add Elevator(s) to the column
@@ -41,7 +42,7 @@ func (c *Column) createElevatorList(i int, elevatorColumn int, floorAmount int) 
 	for i := 0; i < elevatorColumn; i++ {
 		elev := &elevator.Elevator{}
 		elev.StartElevator(c.ID+strconv.Itoa(i+1), floorAmount, c.basementAmount, c.MinRange)
-		c.elevatorList = append(c.elevatorList, *elev)
+		c.ElevatorList = append(c.ElevatorList, *elev)
 	}
 }
 
@@ -102,23 +103,23 @@ func (c *Column) isAtLobby(_floor int) {
 
 // updatePoints will call the method for updating the points of every elevator in the column
 func (c *Column) updatePoints(_floor int, _direction string) {
-	for i := 0; i < len(c.elevatorList); i++ {
+	for i := 0; i < len(c.ElevatorList); i++ {
 		if c.lobby {
-			c.elevatorList[i].PointsUpdateLobby(_floor, _direction, c.MaxRange, c.MinRange)
+			c.ElevatorList[i].PointsUpdateLobby(_floor, _direction, c.MaxRange, c.MinRange)
 
 		} else {
-			c.elevatorList[i].PointsUpdateFloor(_floor, _direction, c.MaxRange, c.MinRange)
+			c.ElevatorList[i].PointsUpdateFloor(_floor, _direction, c.MaxRange, c.MinRange)
 		}
 	}
 }
 
 // sortByPoint will reorganize the list of elevators in such a way that the first index of the list is the elevator with the fewest points then set the variable bestOption to the fist index in the list of elevators
 func (c *Column) sortByPoint() {
-	sort.Slice(c.elevatorList, func(i, j int) bool {
-		return c.elevatorList[i].Points < c.elevatorList[j].Points
+	sort.Slice(c.ElevatorList, func(i, j int) bool {
+		return c.ElevatorList[i].Points < c.ElevatorList[j].Points
 	})
 
-	c.bestOption = &c.elevatorList[0]
+	c.bestOption = &c.ElevatorList[0]
 }
 
 // initPointsPrints will create two list, one for the elevators id and one for there points then call the printing of the points for each elevator
@@ -126,9 +127,9 @@ func (c *Column) initPointsPrints() {
 	var IDs []string
 	var points []string
 
-	for i := 0; i < len(c.elevatorList); i++ {
-		IDs = append(IDs, c.elevatorList[i].ID)
-		points = append(points, strconv.Itoa(c.elevatorList[i].Points))
+	for i := 0; i < len(c.ElevatorList); i++ {
+		IDs = append(IDs, c.ElevatorList[i].ID)
+		points = append(points, strconv.Itoa(c.ElevatorList[i].Points))
 	}
 
 	prints.CreatePointing(c.ID, IDs, points)
@@ -145,15 +146,15 @@ func (c *Column) addStop(_floor int, _stop int, _direction string) {
 
 // runAll will call all the methods needed to make all the elevator to move
 func (c *Column) runAll() {
-	for i := 0; i < len(c.elevatorList); i++ {
-		c.elevatorList[i].All0Remove()
-		c.elevatorList[i].ListSort()
-		c.elevatorList[i].Run()
+	for i := 0; i < len(c.ElevatorList); i++ {
+		c.ElevatorList[i].All0Remove()
+		c.ElevatorList[i].ListSort()
+		c.ElevatorList[i].Run()
 		fmt.Println()
 	}
 }
 
 // ChangeValueC ...
 func (c *Column) ChangeValueC(_elevator int, _status string, _currentFloor int, _stopList []int, _currentDirection string) {
-	c.elevatorList[_elevator].ChangeValueE(_status, _currentFloor, _stopList, _currentDirection)
+	c.ElevatorList[_elevator].ChangeValueE(_status, _currentFloor, _stopList, _currentDirection)
 }
