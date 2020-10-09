@@ -7,7 +7,7 @@ namespace Elevator_Controller_CSharp
     {
         static void Main(string[] args)
         {
-            codeboxx(1);
+            codeboxx(3);
 
 
             void codeboxx(int n)
@@ -36,11 +36,11 @@ namespace Elevator_Controller_CSharp
                 battery.changeValue(2, 4, "MOVING", 39, new List<int>() { 1 }, "down");
 
                 // ||=========> FLOOR COLUMN #4 <=========||
-                battery.changeValue(3, 0, "MOVING", 58, new List<int>() { 1 }, "Down");
+                battery.changeValue(3, 0, "MOVING", 58, new List<int>() { 1 }, "down");
                 battery.changeValue(3, 1, "MOVING", 50, new List<int>() { 60 }, "up");
                 battery.changeValue(3, 2, "MOVING", 46, new List<int>() { 58 }, "up");
                 battery.changeValue(3, 3, "MOVING", 1, new List<int>() { 54 }, "up");
-                battery.changeValue(3, 4, "MOVING", 60, new List<int>() { 1 }, "Down");
+                battery.changeValue(3, 4, "MOVING", 60, new List<int>() { 1 }, "down");
 
                 if (n == 1)
                 {

@@ -13,7 +13,7 @@ namespace Elevator_Controller_CSharp
         public List<Elevator> elevatorList = new List<Elevator>(); // The list that will countain all the elevator of the column
 
         // The constructor method for the Column that will be used when creating a new Column object 
-        public Column(int _floorAmount, int _basementAmount, int _elevatorColumn, int _floorColumn, int _iteration, int _previousMax, int _mod) // The parameter used for creating a column
+        public Column(int _floorAmount, int _basementAmount, int _elevatorColumn, int _floorColumn, int _iteration, int _previousMax, int _remainder) // The parameter used for creating a column
         {
             ID = _iteration + 1; // Setting the "ID" variable of the column to the iteration which start a 0 so we are adding 1 to the iteration so that we don't get a column id of 0
             basementAmount = _basementAmount; // Setting the number of basement to the number of basement in the battery past has a parameter of the constructor
@@ -31,7 +31,7 @@ namespace Elevator_Controller_CSharp
                 // For all the column(s) created after the first one do ...
                 else
                 {
-                    maxRange = _iteration * _floorColumn + _mod; // Set the maximun floor that the column serve to the iteration time the number of floor that the column will serve and adding the remainder for the last column
+                    maxRange = _iteration * _floorColumn + _remainder; // Set the maximun floor that the column serve to the iteration time the number of floor that the column will serve and adding the remainder for the last column
                     minRange = _previousMax + 1; // set the minimum floor that the column will serve to the maximun range of the previous column plus 1, past as parameter in the constructor
                 }
             }
@@ -53,7 +53,7 @@ namespace Elevator_Controller_CSharp
 
                 else // For all the column(s) created after the second one do ...
                 {
-                    maxRange = _iteration * _floorColumn + _mod; // Set to maximum floor that the column will serve to the iteration time the number of floor serve by one column
+                    maxRange = _iteration * _floorColumn + _remainder; // Set to maximum floor that the column will serve to the iteration time the number of floor serve by one column
                     minRange = _previousMax + 1; // set the minimum floor that the column will serve to the maximun range of the previous column plus 1, past as parameter in the constructor
                 }
             }
@@ -66,15 +66,18 @@ namespace Elevator_Controller_CSharp
             }
         }
 
-        // this method is called in the method "columnSelection" of the battery, its passing the value of the request usefull for the selection of the best elevator
+        // this method is called in the method "columnSelection" method of the battery, its passing the value of the request usefull for the selection of the best elevator
         public void request(int _floor, int _stop, string _direction)
         {
+            int n = 1;
+
             // foreach loop that iterate through all of the elevator in the list of elevator
             foreach (Elevator elevator in elevatorList)
-            { 
+            {
                 if (_floor == 1) // if the request was made from the ground floor call the method of the elevator to update its point base on the lobby method
                 {
                     elevator.pointsUpdateLobby(_floor, _direction, maxRange, minRange);
+                    n = 1;
                 }
 
                 else // if the request was made from any other floor than the lobby update the pointing of the elevator with a different method
@@ -83,19 +86,31 @@ namespace Elevator_Controller_CSharp
                 }
             }
             
-            elevatorToSend(_floor, _stop, _direction); // when all the elevator(s) will have there points updated, pass the request to the method "elevatorToSend"
+            elevatorToSend(_floor, _stop, _direction, n); // when all the elevator(s) will have there points updated, pass the request to the method "elevatorToSend"
         }
 
         // a method used for sending the information of the request to the best elevator to send for that particular request
-        public void elevatorToSend(int _floor, int _stop, string _direction)
+        public void elevatorToSend(int _floor, int _stop, string _direction, int n)
         {
             elevatorList.Sort((x, y) => x.points.CompareTo(y.points)); // sort the list of elevator in incressing of points
 
             Elevator bestOption = elevatorList[0]; // set a new variable the the first index of the list of elevator (sorted by points)
 
-            bestOption.addStop(_floor, _stop, _direction); // call the "addStop" method of the best elevator for the request
+            // call one of the two method to add a stop to the stop list of the best option determined by where the request was made from (floor)
+            if (n == 1)
+            {
+                bestOption.addStopFloor(_floor, _stop, _direction);
+            }
+
+            else
+            {
+                bestOption.addStopLobby(_floor, _stop, _direction);
+            }
+
             Console.WriteLine("Request from Floor {0} and going to Floor {1}", _floor, _stop);
             Console.WriteLine("the elevator chosen is : {0}", bestOption.ID);
+            bestOption.all0Remove(); // method called for removing the element(s) that where all ready in the list
+            bestOption.listSort(); // method of the elevator to sort the list before moving the elevator
             bestOption.run(); // use the run method of the elevator to move it to the floor(s) in its queue list
             runAll(); // call the run all method from the column
         }

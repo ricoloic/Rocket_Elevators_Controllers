@@ -281,28 +281,20 @@ func (e *Elevator) StopSwitch() {
 	if len(e.upBuffer) != 0 && len(e.downBuffer) != 0 {
 		if e.previousDirection == "Up" {
 			e.StopList = e.downBuffer
-			for i := 0; i < len(e.downBuffer); i++ {
-				e.downBuffer = e.Remove(e.downBuffer, 0)
-			}
+			e.downBuffer = []int{}
 
 		} else if e.previousDirection == "Down" {
 			e.StopList = e.upBuffer
-			for i := 0; i < len(e.upBuffer); i++ {
-				e.upBuffer = e.Remove(e.upBuffer, 0)
-			}
+			e.upBuffer = []int{}
 		}
 
 	} else if len(e.upBuffer) == 0 && len(e.downBuffer) != 0 {
 		e.StopList = e.downBuffer
-		for i := 0; i < len(e.downBuffer); i++ {
-			e.downBuffer = e.Remove(e.downBuffer, 0)
-		}
+		e.downBuffer = []int{}
 
 	} else if len(e.upBuffer) != 0 && len(e.downBuffer) == 0 {
 		e.StopList = e.upBuffer
-		for i := 0; i < len(e.upBuffer); i++ {
-			e.upBuffer = e.Remove(e.upBuffer, 0)
-		}
+		e.upBuffer = []int{}
 
 	} else if len(e.upBuffer) == 0 && len(e.downBuffer) == 0 {
 		e.Status = "IDLE"
@@ -335,20 +327,11 @@ func (e *Elevator) Run() {
 		}
 
 		if e.CurrentFloor == e.StopList[0] && e.previousFloor != e.CurrentFloor {
-			if len(e.StopList) > 1 {
-				fmt.Println("")
-				prints.CreateState(e.ID, e.previousFloor, e.Status, e.StopList[0])
-				e.DoorState()
-				e.previousFloor = e.StopList[0]
-				e.StopList = e.Remove(e.StopList, 0)
-
-			} else {
-				fmt.Println("")
-				prints.CreateState(e.ID, e.previousFloor, e.Status, e.StopList[0])
-				e.DoorState()
-				e.previousFloor = e.StopList[0]
-				e.StopList = e.Remove(e.StopList, 0)
-			}
+			fmt.Println("")
+			prints.CreateState(e.ID, e.previousFloor, e.Status, e.StopList[0])
+			e.DoorState()
+			e.previousFloor = e.StopList[0]
+			e.StopList = e.Remove(e.StopList, 0)
 
 		} else if len(e.StopList) != 0 && e.previousFloor == e.CurrentFloor {
 			e.StopList = e.Remove(e.StopList, 0)

@@ -92,14 +92,12 @@ func (c *Column) runAll() {
 func (c *Column) Request(_floor int, _stop int, _direction string) {
 	n := 1
 
-	if _floor == 1 {
-		for i := 0; i < len(c.elevatorList); i++ {
+	for i := 0; i < len(c.elevatorList); i++ {
+		if _floor == 1 {
 			c.elevatorList[i].PointsUpdateLobby(_floor, _direction, c.MaxRange, c.MinRange)
-		}
-		n = 0
+			n = 0
 
-	} else {
-		for i := 0; i < len(c.elevatorList); i++ {
+		} else {
 			c.elevatorList[i].PointsUpdateFloor(_floor, _direction, c.MaxRange, c.MinRange)
 		}
 	}

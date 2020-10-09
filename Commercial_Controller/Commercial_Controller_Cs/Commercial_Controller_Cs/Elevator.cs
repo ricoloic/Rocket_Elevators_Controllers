@@ -29,6 +29,24 @@ namespace Elevator_Controller_CSharp
             previousFloor = currentFloor; // set the previous floor to the current floor
         }
 
+        // return 0 if the number provided is in one of the list else return the number provided
+        public int allCheck(int num)
+        {
+            if (checkIn(num))
+            {
+                num = 0;
+            }
+            return num;
+        }
+
+        // removing all the element 0 from all the lists
+        public void all0Remove()
+        {
+            stopList = remove0fromList(stopList);
+            upBuffer = remove0fromList(upBuffer);
+            downBuffer = remove0fromList(downBuffer);
+        }
+
         // method used for removing all element (int) 0 in a given list
         public List<int> remove0fromList(List<int> _nb)
         {
@@ -96,6 +114,8 @@ namespace Elevator_Controller_CSharp
         // method to change and print the door state of the elevator
         public void doorState()
         {
+            Console.WriteLine("The Elevator {0} has arrived at Floor {1}", ID, currentFloor);
+
             door = "open";
             Console.WriteLine("The door are {0}", door);
 
@@ -129,15 +149,16 @@ namespace Elevator_Controller_CSharp
         public void pointsUpdateFloor(int _floor, string _direction, int _maxRange, int _minRange)
         {
             int differenceLastStop = 0;
+            int differenceFloor = positive(currentFloor - _floor);
+            points = 0;
 
             if (status != "IDLE")
             {
                 differenceLastStop = positive(stopList[stopList.Count - 1] - _floor);
             }
 
-            int differenceFloor = positive(currentFloor - _floor);
-
-            points = 0;
+            bool conditionInPath = (_floor >= currentFloor && _direction == "up") || (_floor <= currentFloor && _direction == "down");
+            bool conditionNotInPath = (_floor < currentFloor && _direction == "up") || (_floor > currentFloor && _direction == "down");
 
             if (status == "IDLE")
             {
@@ -155,12 +176,12 @@ namespace Elevator_Controller_CSharp
 
             else if (currentDirection == _direction)
             {
-                if ((_floor >= currentFloor && _direction == "up") || (_floor <= currentFloor && _direction == "down"))
+                if (conditionInPath)
                 {
                     points = differenceFloor + stopList.Count;
                 }
 
-                else if ((_floor < currentFloor && _direction == "up") || (_floor > currentFloor && _direction == "down"))
+                else if (conditionNotInPath)
                 {
                     points = positive(_maxRange) + differenceLastStop + stopList.Count;
                 }
@@ -190,15 +211,13 @@ namespace Elevator_Controller_CSharp
         public void pointsUpdateLobby(int _floor, string _direction, int _maxRange, int _minRange)
         {
             int differenceLastStop = 0;
+            int differenceFloor = positive(currentFloor - _floor);
+            points = 0;
 
             if (status != "IDLE")
             {
                 differenceLastStop = positive(stopList[stopList.Count - 1] - _floor);
             }
-
-            int differenceFloor = positive(currentFloor - _floor);
-
-            points = 0;
 
             if (status == "IDLE")
             {
@@ -233,94 +252,53 @@ namespace Elevator_Controller_CSharp
 
         /// <summary>
         /// To long to describe and I'm tired of writing comments
+        /// but the big idea here is to add both the stop of the user and the current floor of the user to the good stop list of the elevator "stopList, upbuffer, downBuffer"
         /// </summary>
         /// <param name="_floor"></param>
         /// <param name="_stop"></param>
         /// <param name="_direction"></param>
-        public void addStop(int _floor, int _stop, string _direction)
+
+        public void addStopLobby(int _floor, int _stop, string _direction)
         {
-            int floor = _floor;
-            int stop = _stop;
+            int floor = allCheck(_floor);
+            int stop = allCheck(_stop);
 
-            if (checkIn(_floor))
+            if (_direction != currentDirection && _floor <= currentFloor)
             {
-                floor = 0;
+                stopList.Add(floor);
+                upBuffer.Add(stop);
             }
 
-            if (checkIn(_stop))
+            else if (_direction != currentDirection && _floor >= currentFloor)
             {
-                stop = 0;
+                stopList.Add(floor);
+                downBuffer.Add(stop);
             }
 
-            if (_floor == 1)
+            else if (status == "IDLE")
             {
-                if (_direction != currentDirection && _floor <= currentFloor)
+                stopList.Add(floor);
+
+                if (_direction == "up")
                 {
-                    stopList.Add(floor);
                     upBuffer.Add(stop);
                 }
 
-                else if (_direction != currentDirection && _floor >= currentFloor)
+                else if (_direction == "down")
                 {
-                    stopList.Add(floor);
                     downBuffer.Add(stop);
                 }
-
-                else if (status == "IDLE")
-                {
-                    stopList.Add(floor);
-
-                    if (_direction == "up")
-                    {
-                        upBuffer.Add(stop);
-                    }
-
-                    else if (_direction == "down")
-                    {
-                        downBuffer.Add(_stop);
-                    }
-                }
-
-                else if (_direction == currentDirection)
-                {
-                    if (_floor == currentFloor)
-                    {
-                        stopList.Add(floor);
-                        stopList.Add(stop);
-                    }
-
-                    else if (_floor != currentFloor)
-                    {
-                        if (_direction == "up")
-                        {
-                            stopList.Add(floor);
-                            upBuffer.Add(stop);
-                        }
-
-                        else if (_direction == "down")
-                        {
-                            stopList.Add(floor);
-                            downBuffer.Add(stop);
-                        }
-                    }
-
-                    else if (_floor < currentFloor)
-                    {
-                        downBuffer.Add(floor);
-                        upBuffer.Add(stop);
-                    }
-
-                    else if (_floor > currentFloor)
-                    {
-                        upBuffer.Add(floor);
-                        downBuffer.Add(stop);
-                    }
-                }
             }
 
-            else
+            else if (_direction == currentDirection)
             {
-                if (status == "IDLE")
+                if (_floor == currentFloor)
+                {
+                    stopList.Add(floor);
+                    stopList.Add(stop);
+                }
+
+                else if (_floor != currentFloor)
                 {
                     stopList.Add(floor);
 
@@ -335,51 +313,78 @@ namespace Elevator_Controller_CSharp
                     }
                 }
 
-                else if (_direction == currentDirection)
+                else if (_floor < currentFloor)
                 {
-                    if ((_direction == "up" && _floor >= currentFloor) || (_direction == "down" && _floor <= currentFloor))
-                    {
-                        stopList.Add(floor);
-                        stopList.Add(stop);
-                    }
-
-                    else if (_direction == "up" && _floor < currentFloor)
-                    {
-                        downBuffer.Add(floor);
-                        upBuffer.Add(stop);
-                    }
-
-                    else if (_direction == "down" && _floor > currentFloor)
-                    {
-                        upBuffer.Add(floor);
-                        downBuffer.Add(stop);
-                    }
+                    downBuffer.Add(floor);
+                    upBuffer.Add(stop);
                 }
 
-                else if (_direction != currentDirection)
+                else if (_floor > currentFloor)
                 {
-                    if (_direction == "up")
-                    {
-                        upBuffer.Add(floor);
-                        upBuffer.Add(stop);
-                    }
-
-                    else if (_direction == "down")
-                    {
-                        downBuffer.Add(floor);
-                        downBuffer.Add(stop);
-                    }
+                    upBuffer.Add(floor);
+                    downBuffer.Add(stop);
                 }
             }
-
-            stopList = remove0fromList(stopList);
-            upBuffer = remove0fromList(upBuffer);
-            downBuffer = remove0fromList(downBuffer);
-
-            listSort();
         }
 
-        // method used for updating the list of stop with a buffer based on the previous direction
+        public void addStopFloor(int _floor, int _stop, string _direction)
+        {
+            int floor = allCheck(_floor);
+            int stop = allCheck(_stop);
+            
+            if (status == "IDLE")
+            {
+                stopList.Add(floor);
+
+                if (_direction == "up")
+                {
+                    upBuffer.Add(stop);
+                }
+
+                else if (_direction == "down")
+                {
+                    downBuffer.Add(stop);
+                }
+            }
+
+            else if (_direction == currentDirection)
+            {
+                if ((_direction == "up" && _floor >= currentFloor) || (_direction == "down" && _floor <= currentFloor))
+                {
+                    stopList.Add(floor);
+                    stopList.Add(stop);
+                }
+
+                else if (_direction == "up" && _floor < currentFloor)
+                {
+                    downBuffer.Add(floor);
+                    upBuffer.Add(stop);
+                }
+
+                else if (_direction == "down" && _floor > currentFloor)
+                {
+                    upBuffer.Add(floor);
+                    downBuffer.Add(stop);
+                }
+            }
+
+            else if (_direction != currentDirection)
+            {
+                if (_direction == "up")
+                {
+                    upBuffer.Add(floor);
+                    upBuffer.Add(stop);
+                }
+
+                else if (_direction == "down")
+                {
+                    downBuffer.Add(floor);
+                    downBuffer.Add(stop);
+                }
+            }
+        }
+
+        // method used for updating the list of stop with a buffer based on the previous direction and the length of the "up and down buffer"
         public void stopSwitch()
         {
             if (upBuffer.Count != 0 && downBuffer.Count != 0)
@@ -387,38 +392,26 @@ namespace Elevator_Controller_CSharp
                 if (previousDirection == "up")
                 {
                     stopList = downBuffer;
-                    foreach (int i in downBuffer)
-                    {
-                        downBuffer.RemoveAt(0);
-                    }
+                    downBuffer = new List<int>();
                 }
 
                 else if (previousDirection == "down")
                 {
                     stopList = upBuffer;
-                    foreach (int i in upBuffer)
-                    {
-                        upBuffer.RemoveAt(0);
-                    }
+                    upBuffer = new List<int>();
                 }
             }
 
             else if (downBuffer.Count != 0 && upBuffer.Count == 0)
             {
                 stopList = downBuffer;
-                foreach (int i in downBuffer)
-                {
-                    downBuffer.RemoveAt(0);
-                }
+                downBuffer = new List<int>();
             }
 
             else if (downBuffer.Count == 0 && upBuffer.Count != 0)
             {
                 stopList = upBuffer;
-                for (int i = 0; i < upBuffer.Count; i++)
-                {
-                    upBuffer.RemoveAt(0);
-                }
+                upBuffer = new List<int>();
             }
 
             else if (downBuffer.Count == 0 && upBuffer.Count == 0)
@@ -426,9 +419,14 @@ namespace Elevator_Controller_CSharp
                 status = "IDLE";
                 currentDirection = "stop";
             }
+
+            if (stopList.Count != 0)
+            {
+                run();
+            }
         }
 
-        // method used for moving the elevator
+        // method used for moving the elevator and calling the oppening and closing of the doors when arrived at destination
         public void run()
         {
             if (currentDirection != previousDirection)
@@ -457,19 +455,9 @@ namespace Elevator_Controller_CSharp
 
                 if (currentFloor == stopList[0] && previousFloor != currentFloor)
                 {
-                    if (stopList.Count > 1)
-                    {
-                        doorState();
-                        previousFloor = stopList[0];
-                        stopList.RemoveAt(0);
-                    }
-
-                    else
-                    {
-                        doorState();
-                        previousFloor = stopList[0];
-                        stopList.RemoveAt(0);
-                    }
+                    doorState();
+                    previousFloor = stopList[0];
+                    stopList.RemoveAt(0);
                 }
 
                 else if (stopList.Count != 0 && previousFloor == currentFloor)

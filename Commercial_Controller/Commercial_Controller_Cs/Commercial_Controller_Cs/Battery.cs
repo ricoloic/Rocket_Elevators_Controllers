@@ -58,20 +58,17 @@ namespace Elevator_Controller_CSharp
         // Method that will be called when ever there is a user request using the current floor of the user "_floor", the floor requested "_stop" and the direction of the request "_direction"
         public void columnSelection(int _floor, int _stop, string _direction)
         {
-            if (_stop == 1) // If the floor requested is the ground floor "1"
+            foreach (Column column in columnList) // Iterate through the list of column using a for each loop (where the variable will be the value of the element in the list and changing at every iteration)
             {
-                foreach (Column column in columnList) // Iterate through the list of column using a for each loop (where the variable will be the value of the element in the list and changing at every iteration)
+                if (_stop == 1) // If the floor requested is the ground floor "1"
                 {
                     if (_floor >= column.minRange && _floor <= column.maxRange) // At every iteration check if the current floor of the user is in the range of that column "minRange maxRange"
                     {
                         column.request(_floor, _stop, _direction); // when the above "if statement" is true call the method of the column to find the best elevator an adding the current floor and the requested floor of the user using the current floor of the user, the requested floor and the direction of the request
                     }
                 }
-            }
 
-            else // If the user is at the ground floor do almost same has above but insted of using the current floor of the user, use the floor requested to find the column to send the request to
-            {
-                foreach (Column column in columnList)
+                else // If the user is at the ground floor do almost the same has above but insted of using the current floor of the user, use the floor requested to find the column to send the request to
                 {
                     if (_stop >= column.minRange && _stop <= column.maxRange)
                     {
