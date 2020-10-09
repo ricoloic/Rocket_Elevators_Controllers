@@ -1,99 +1,99 @@
-package main
+package prints
 
 import (
 	"fmt"
+	"go_controller/controller"
+	"strconv"
 )
 
-func main() {
-	p := Printer{}
-	// p.createRequest(1, 2, "Up")
-	// p.createState(1, 3500, "IDLE", 1)
-	// p.upArrow("3")
-	// p.doorOpen("2")
-	// p.doorClose("2")
-	// p.createArrival(8000)
-	p.createPointing([]int{4, 5, 6, 78, 234, 3243}, []int{2, 3, 4, 5, 63, 225})
+func colors(color string, value string) string {
+	if color == "red" {
+		return string("\033[31m") + value + string("\033[0m")
+	} else if color == "green" {
+		return string("\033[32m") + value + string("\033[0m")
+	} else if color == "yellow" {
+		return string("\033[33m") + value + string("\033[0m")
+	} else if color == "blue" {
+		return string("\033[34m") + value + string("\033[0m")
+	} else if color == "purple" {
+		return string("\033[35m") + value + string("\033[0m")
+	} else if color == "cyan" {
+		return string("\033[36m") + value + string("\033[0m")
+	} else if color == "white" {
+		return string("\033[37m") + value + string("\033[0m")
+	}
+	return ""
 }
 
-// Printer ...
-type Printer struct {
-	id             int
-	status         string
-	floor          int
-	nextStop       int
-	atFloor        int
-	floorRequested int
-	direction      string
+// CreateState ...
+func CreateState(_id string, _floor int, _status string, _stop int) {
+	controller.Wait(2)
+	TopBottomLine(_status)
+	InnerArrowElevatorLine(_status)
+	EmptyDoubleLine(_status)
+	IDLine(_id, _status)
+	FloorLine(_floor, _status)
+	StatusLine(_status)
+	StopLine(_stop, _status)
+	EmptyDoubleLine(_status)
+	InnerArrowLine(_status)
+	TopBottomLine(_status)
 }
 
-func (p *Printer) createPointing(_id []int, _points []int) {
+// CreateArrival ...
+func CreateArrival(_floor int) {
+	size := CountStr(_floor)
+
+	controller.Wait(2)
+	TopBottomLine(size)
+	FloorArivedLine(_floor)
+	TopBottomLine(size)
+}
+
+// CreateRequest ...
+func CreateRequest(_floor int, _stop int, _direction string) {
+	controller.Wait(2)
+	fmt.Println()
+	TopBottomLine("2")
+	InnerArrowAndRequestLine()
+	EmptyDoubleLine("2")
+	AtFloorLine(_floor)
+	FloorRequestLine(_stop)
+	DirectionLine(_direction)
+	EmptyDoubleLine("2")
+	InnerArrowLine("2")
+	TopBottomLine("2")
+}
+
+// CreatePointing ...
+func CreatePointing(_columnID string, _id []string, _points []string) {
+	fmt.Println("")
+	controller.Wait(2)
+
+	ColumnSelectedLine(_columnID)
 	fmt.Println("")
 
-	hightestCount := 0
-
 	for i := 0; i < len(_points); i++ {
-		countT := p.countInt(_id[i]) + p.countInt(_points[i])
-
-		if hightestCount < countT {
-			hightestCount = countT
-		}
+		fmt.Println("		ELEVATOR " + colors("red", _id[i]) + " - HAS " + colors("yellow", _points[i]) + " pts")
+		fmt.Println("")
 	}
 
-	for i := 0; i < len(_points); i++ {
-		// p.elevatorLine
-	}
-
-	p.bestElevatorLine(_id[0], _points[0])
+	BestElevatorLine(_id[0], _points[0])
+	fmt.Println("")
 }
 
-// 		fmt.Println("		      ELEVATOR", _id[i], "- HAS", _points[i], "pts")
-
-func (p *Printer) bestElevatorLine(_id int, _points int) {
-	fmt.Println("		      ELEVATOR", _id, "- WITH", _points, "pts")
+// BestElevatorLine ...
+func BestElevatorLine(_id string, _points string) {
+	fmt.Println("		THE BEST ELEVATOR IS ELEVATOR " + colors("red", _id) + " WITH " + colors("yellow", _points) + " pts")
 }
 
-func (p *Printer) positive(n int) int {
-	if n < 0 {
-		n *= -1
-	}
-	return n
+// ColumnSelectedLine ...
+func ColumnSelectedLine(_columnID string) {
+	fmt.Println("		THE COLUMN SELECTED IS COLUMN " + colors("red", _columnID))
 }
 
-func (p *Printer) createState(_id int, _floor int, _status string, _stop int) {
-	p.topBottomLine(_status)
-	p.innerArrowLine(_status)
-	p.emptyDoubleLine(_status)
-	p.idLine(_id, _status)
-	p.floorLine(_floor, _status)
-	p.statusLine(_status)
-	p.stopLine(_stop, _status)
-	p.emptyDoubleLine(_status)
-	p.innerArrowLine(_status)
-	p.topBottomLine(_status)
-}
-
-func (p *Printer) createArrival(_floor int) {
-	size := p.countStr(_floor)
-
-	//p.elevatorLine(_id, _floor)
-	p.topBottomLine(size)
-	p.floorArivedLine(_floor)
-	p.topBottomLine(size)
-}
-
-func (p *Printer) createRequest(_floor int, _stop int, _direction string) {
-	p.topBottomLine("2")
-	p.innerArrowAndRequestLine()
-	p.emptyDoubleLine("2")
-	p.atFloorLine(_floor)
-	p.floorRequestLine(_stop)
-	p.directionLine(_direction)
-	p.emptyDoubleLine("2")
-	p.innerArrowLine("2")
-	p.topBottomLine("2")
-}
-
-func (p *Printer) countStr(n int) string {
+// CountStr ...
+func CountStr(n int) string {
 	count := "0"
 
 	if n >= 0 && n < 10 {
@@ -109,7 +109,8 @@ func (p *Printer) countStr(n int) string {
 	return count
 }
 
-func (p *Printer) countInt(n int) int {
+// CountInt ...
+func CountInt(n int) int {
 	count := 0
 
 	if n >= 0 && n < 10 {
@@ -125,7 +126,8 @@ func (p *Printer) countInt(n int) int {
 	return count
 }
 
-func (p *Printer) topBottomLine(_size string) {
+// TopBottomLine ...
+func TopBottomLine(_size string) {
 	if _size == "IDLE" {
 		fmt.Println("		+------------------------------+")
 	} else if _size == "MOVING" {
@@ -138,30 +140,11 @@ func (p *Printer) topBottomLine(_size string) {
 		fmt.Println("		+-------------------------------------+")
 	} else if _size == "4" {
 		fmt.Println("		+--------------------------------------+")
-	} else if _size == "5" {
-		fmt.Println("		+---------------------------------------+")
-	} else if _size == "6" {
-		fmt.Println("		+----------------------------------------+")
-	} else if _size == "7" {
-		fmt.Println("		+-----------------------------------------+")
-	} else if _size == "8" {
-		fmt.Println("		+------------------------------------------+")
-	} else if _size == "9" {
-		fmt.Println("		+-------------------------------------------+")
-	} else if _size == "10" {
-		fmt.Println("		+--------------------------------------------+")
-	} else if _size == "11" {
-		fmt.Println("		+---------------------------------------------+")
-	} else if _size == "12" {
-		fmt.Println("		+----------------------------------------------+")
-	} else if _size == "13" {
-		fmt.Println("		+-----------------------------------------------+")
-	} else if _size == "14" {
-		fmt.Println("		+------------------------------------------------+")
 	}
 }
 
-func (p *Printer) innerArrowLine(_size string) {
+// InnerArrowLine ...
+func InnerArrowLine(_size string) {
 	if _size == "IDLE" {
 		fmt.Println("		| +--->                  <---+ |")
 	} else if _size == "MOVING" {
@@ -177,59 +160,45 @@ func (p *Printer) innerArrowLine(_size string) {
 	}
 }
 
-func (p *Printer) elevatorLine(_id int, _points int) {
-	countI := p.countStr(_id)
-	countP := p.countStr(_points)
-
-	//fmt.Println(countI, countP)
-
-		if countI == "1" {
-			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts           |")
-		} else if countI == "2" {
-			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts          |")
-		} else if countI == "3" {
-			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts         |")
-		} else if countI == "4" {
-			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts        |")
-		}
-	} else if countP == "2" {
-		if countI == "1" {
-			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts          |")
-		} else if countI == "2" {
-			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts         |")
-		} else if countI == "3" {
-			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts        |")
-		} else if countI == "4" {
-			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts       |")
-		}
-	} else if countP == "3" {
-		if countI == "1" {
-			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts         |")
-		} else if countI == "2" {
-			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts        |")
-		} else if countI == "3" {
-			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts       |")
-		} else if countI == "4" {
-			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts      |")
-		}
-	} else if countP == "4" {
-		if countI == "1" {
-			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts        |")
-		} else if countI == "2" {
-			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts       |")
-		} else if countI == "3" {
-			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts      |")
-		} else if countI == "4" {
-			fmt.Println("		|     ELEVATOR", _id, "- HAS:", _points, "pts     |")
-		}
+// InnerArrowElevatorLine ...
+func InnerArrowElevatorLine(_size string) {
+	if _size == "IDLE" {
+		fmt.Println("		| +--->     Elevator     <---+ |")
+	} else if _size == "MOVING" {
+		fmt.Println("		| +--->      Elevator      <---+ |")
+	} else if _size == "1" {
+		fmt.Println("		| +--->        Elevator       <---+ |")
+	} else if _size == "2" {
+		fmt.Println("		| +--->        Elevator        <---+ |")
+	} else if _size == "3" || _size == "MAINTENANCE" {
+		fmt.Println("		| +--->         Elevator        <---+ |")
+	} else if _size == "4" {
+		fmt.Println("		| +--->         Elevator         <---+ |")
 	}
 }
 
-func (p *Printer) innerArrowAndRequestLine() {
+// ElevatorLine ...
+func ElevatorLine(_id int) {
+	count := CountStr(_id)
+
+	if count == "1" {
+		fmt.Println("		  +--->      ELEVATOR", _id, "      <---+  ")
+	} else if count == "2" {
+		fmt.Println("		  +--->      ELEVATOR", _id, "     <---+  ")
+	} else if count == "3" {
+		fmt.Println("		  +--->     ELEVATOR", _id, "     <---+  ")
+	} else if count == "4" {
+		fmt.Println("		  +--->     ELEVATOR", _id, "    <---+  ")
+	}
+}
+
+// InnerArrowAndRequestLine ...
+func InnerArrowAndRequestLine() {
 	fmt.Println("		| +--->         REQUEST        <---+ |") // "2"
 }
 
-func (p *Printer) emptyDoubleLine(_size string) {
+// EmptyDoubleLine ...
+func EmptyDoubleLine(_size string) {
 	if _size == "IDLE" {
 		fmt.Println("		| |                          | |")
 	} else if _size == "MOVING" {
@@ -243,7 +212,8 @@ func (p *Printer) emptyDoubleLine(_size string) {
 	}
 }
 
-func (p *Printer) upArrow(_size string) {
+// UpArrow ...
+func UpArrow(_size string) {
 	if _size == "1" {
 		fmt.Println("		+---------------------+")
 		fmt.Println("		| +--->         <---+ |")
@@ -284,7 +254,8 @@ func (p *Printer) upArrow(_size string) {
 	}
 }
 
-func (p *Printer) downArrow(_size string) {
+// DownArrow ...
+func DownArrow(_size string) {
 	if _size == "1" {
 		fmt.Println("		+---------------------+")
 		fmt.Println("		| +--->         <---+ |")
@@ -326,65 +297,68 @@ func (p *Printer) downArrow(_size string) {
 	}
 }
 
-func (p *Printer) doorOpen(_size string) {
+// DoorOpen ...
+func DoorOpen(_size string) {
 	if _size == "1" || _size == "2" {
-		p.doorTopBottomLine(_size)
-		p.doorMiddleLine(_size)
+		DoorTopBottomLine(_size)
+		DoorMiddleLine(_size)
 		if _size == "2" {
-			p.doorMiddleLine(_size)
+			DoorMiddleLine(_size)
 		}
-		p.leftArrowLine(_size)
+		LeftArrowLine(_size)
 		if _size == "2" {
-			p.doorMiddleLine(_size)
+			DoorMiddleLine(_size)
 		}
-		p.doorMiddleLine(_size)
-		p.openLine(_size)
-		p.doorMiddleLine(_size)
-		p.doorMiddleLine(_size)
-		p.leftArrowLine(_size)
+		DoorMiddleLine(_size)
+		OpenLine(_size)
+		DoorMiddleLine(_size)
+		DoorMiddleLine(_size)
+		LeftArrowLine(_size)
 		if _size == "2" {
-			p.doorMiddleLine(_size)
-			p.doorMiddleLine(_size)
-			p.doorMiddleLine(_size)
-			p.doorMiddleLine(_size)
+			DoorMiddleLine(_size)
+			DoorMiddleLine(_size)
+			DoorMiddleLine(_size)
+			DoorMiddleLine(_size)
 		}
-		p.doorMiddleLine(_size)
-		p.doorTopBottomLine(_size)
+		DoorMiddleLine(_size)
+		DoorTopBottomLine(_size)
 	} else {
 		fmt.Println("\n		The size entered for the door opening ain't good change it and try again !")
 	}
 }
 
-func (p *Printer) doorClose(_size string) {
+// DoorClose ...
+func DoorClose(_size string) {
 	if _size == "1" || _size == "2" {
-		p.doorTopBottomLine(_size)
-		p.doorMiddleLine(_size)
+		DoorTopBottomLine(_size)
+		DoorMiddleLine(_size)
 		if _size == "2" {
-			p.doorMiddleLine(_size)
+			DoorMiddleLine(_size)
 		}
-		p.rightArrowLine(_size)
+		RightArrowLine(_size)
 		if _size == "2" {
-			p.doorMiddleLine(_size)
+			DoorMiddleLine(_size)
 		}
-		p.doorMiddleLine(_size)
-		p.closingLine(_size)
-		p.doorMiddleLine(_size)
-		p.doorMiddleLine(_size)
-		p.rightArrowLine(_size)
+		DoorMiddleLine(_size)
+		ClosingLine(_size)
+		DoorMiddleLine(_size)
+		DoorMiddleLine(_size)
+		RightArrowLine(_size)
 		if _size == "2" {
-			p.doorMiddleLine(_size)
-			p.doorMiddleLine(_size)
-			p.doorMiddleLine(_size)
-			p.doorMiddleLine(_size)
+			DoorMiddleLine(_size)
+			DoorMiddleLine(_size)
+			DoorMiddleLine(_size)
+			DoorMiddleLine(_size)
 		}
-		p.doorMiddleLine(_size)
-		p.doorTopBottomLine(_size)
+		DoorMiddleLine(_size)
+		DoorTopBottomLine(_size)
 	} else {
 		fmt.Println("\n		The size entered for the door opening ain't good change it and try again !")
 	}
 }
 
-func (p *Printer) leftArrowLine(_size string) {
+// LeftArrowLine ...
+func LeftArrowLine(_size string) {
 	if _size == "1" {
 		fmt.Println("		|  <<  <<  ||   |")
 	} else if _size == "2" {
@@ -392,7 +366,8 @@ func (p *Printer) leftArrowLine(_size string) {
 	}
 }
 
-func (p *Printer) rightArrowLine(_size string) {
+// RightArrowLine ...
+func RightArrowLine(_size string) {
 	if _size == "1" {
 		fmt.Println("		|  >>  >>  ||   |")
 	} else if _size == "2" {
@@ -400,7 +375,8 @@ func (p *Printer) rightArrowLine(_size string) {
 	}
 }
 
-func (p *Printer) openLine(_size string) {
+// OpenLine ...
+func OpenLine(_size string) {
 	if _size == "1" {
 		fmt.Println("		|   Open   ||   |")
 	} else if _size == "2" {
@@ -408,7 +384,8 @@ func (p *Printer) openLine(_size string) {
 	}
 }
 
-func (p *Printer) doorMiddleLine(_size string) {
+// DoorMiddleLine ...
+func DoorMiddleLine(_size string) {
 	if _size == "1" {
 		fmt.Println("		|   	   ||   |")
 	} else if _size == "2" {
@@ -416,7 +393,8 @@ func (p *Printer) doorMiddleLine(_size string) {
 	}
 }
 
-func (p *Printer) doorTopBottomLine(_size string) {
+// DoorTopBottomLine ...
+func DoorTopBottomLine(_size string) {
 	if _size == "1" {
 		fmt.Println("		+----------++---+")
 	} else if _size == "2" {
@@ -424,7 +402,8 @@ func (p *Printer) doorTopBottomLine(_size string) {
 	}
 }
 
-func (p *Printer) closingLine(_size string) {
+// ClosingLine ...
+func ClosingLine(_size string) {
 	if _size == "1" {
 		fmt.Println("		|   Close  ||   |")
 	} else if _size == "2" {
@@ -432,8 +411,9 @@ func (p *Printer) closingLine(_size string) {
 	}
 }
 
-func (p *Printer) floorArivedLine(_floor int) {
-	count := p.countStr(_floor)
+// FloorArivedLine ...
+func FloorArivedLine(_floor int) {
+	count := CountStr(_floor)
 
 	if count == "1" {
 		fmt.Println("		| +--->  ARRIVE AT FLOOR :", _floor, " <---+ |")
@@ -446,43 +426,46 @@ func (p *Printer) floorArivedLine(_floor int) {
 	}
 }
 
-func (p *Printer) idLine(_id int, _status string) {
-	count := p.countStr(_id)
+// IDLine ...
+func IDLine(_id string, _status string) {
+	count := strconv.Itoa(len(_id))
+	ID := colors("red", _id)
 
 	if _status == "IDLE" {
 		if count == "1" {
-			fmt.Println("		| |       ID:", _id, "             | |")
+			fmt.Println("		| |       ID: " + ID + "               | |")
 		} else if count == "2" {
-			fmt.Println("		| |       ID:", _id, "            | |")
+			fmt.Println("		| |       ID: " + ID + "             | |")
 		} else if count == "3" {
-			fmt.Println("		| |       ID:", _id, "           | |")
+			fmt.Println("		| |       ID: " + ID + "            | |")
 		} else if count == "4" {
-			fmt.Println("		| |       ID:", _id, "          | |")
+			fmt.Println("		| |       ID: " + ID + "           | |")
 		}
 	} else if _status == "MOVING" {
 		if count == "1" {
-			fmt.Println("		| |       ID:", _id, "               | |")
+			fmt.Println("		| |       ID: " + ID + "                | |")
 		} else if count == "2" {
-			fmt.Println("		| |       ID:", _id, "              | |")
+			fmt.Println("		| |       ID: " + ID + "               | |")
 		} else if count == "3" {
-			fmt.Println("		| |       ID:", _id, "             | |")
+			fmt.Println("		| |       ID: " + ID + "              | |")
 		} else if count == "4" {
-			fmt.Println("		| |       ID:", _id, "            | |")
+			fmt.Println("		| |       ID: " + ID + "             | |")
 		}
 	} else if _status == "MAINTENANCE" {
 		if count == "1" {
-			fmt.Println("		| |       ID:", _id, "                    | |")
+			fmt.Println("		| |       ID: " + ID + "                     | |")
 		} else if count == "2" {
-			fmt.Println("		| |       ID:", _id, "                   | |")
+			fmt.Println("		| |       ID: " + ID + "                    | |")
 		} else if count == "3" {
-			fmt.Println("		| |       ID:", _id, "                  | |")
+			fmt.Println("		| |       ID: " + ID + "                   | |")
 		} else if count == "4" {
-			fmt.Println("		| |       ID:", _id, "                 | |")
+			fmt.Println("		| |       ID: " + ID + "                  | |")
 		}
 	}
 }
 
-func (p *Printer) directionLine(_direction string) {
+// DirectionLine ...
+func DirectionLine(_direction string) {
 	if _direction == "Up" {
 		fmt.Println("		| |        DIRECTION:", "UP", "          | |")
 	} else if _direction == "Down" {
@@ -492,8 +475,9 @@ func (p *Printer) directionLine(_direction string) {
 	}
 }
 
-func (p *Printer) atFloorLine(_atFloor int) {
-	count := p.countStr(_atFloor)
+// AtFloorLine ...
+func AtFloorLine(_atFloor int) {
+	count := CountStr(_atFloor)
 
 	if count == "1" {
 		fmt.Println("		| |        AT FLOOR:", _atFloor, "            | |")
@@ -506,8 +490,9 @@ func (p *Printer) atFloorLine(_atFloor int) {
 	}
 }
 
-func (p *Printer) floorRequestLine(_requestFloor int) {
-	count := p.countStr(_requestFloor)
+// FloorRequestLine ...
+func FloorRequestLine(_requestFloor int) {
+	count := CountStr(_requestFloor)
 
 	if count == "1" {
 		fmt.Println("		| |        FLOOR REQUESTED:", _requestFloor, "     | |")
@@ -520,8 +505,9 @@ func (p *Printer) floorRequestLine(_requestFloor int) {
 	}
 }
 
-func (p *Printer) floorLine(_floor int, _status string) {
-	count := p.countStr(_floor)
+// FloorLine ...
+func FloorLine(_floor int, _status string) {
+	count := CountStr(_floor)
 
 	if _status == "IDLE" {
 		if count == "1" {
@@ -556,8 +542,9 @@ func (p *Printer) floorLine(_floor int, _status string) {
 	}
 }
 
-func (p *Printer) stopLine(_stop int, _status string) {
-	count := p.countStr(_stop)
+// StopLine ...
+func StopLine(_stop int, _status string) {
+	count := CountStr(_stop)
 
 	if _status == "IDLE" {
 		if count == "1" {
@@ -592,7 +579,8 @@ func (p *Printer) stopLine(_stop int, _status string) {
 	}
 }
 
-func (p *Printer) statusLine(_status string) {
+// StatusLine ...
+func StatusLine(_status string) {
 	if _status == "IDLE" {
 		fmt.Println("		| |       Status:", "IDLE", "      | |")
 	} else if _status == "MOVING" {
