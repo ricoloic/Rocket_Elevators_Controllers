@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Elevator_Controller_CSharp
 {
@@ -14,7 +15,6 @@ namespace Elevator_Controller_CSharp
         // Constructor method of the battery class that will be called when ever you create a new Battery object
         public Battery(int _columnBattery, int _floorAmount, int _basementAmount, int _elevatorColumn)
         {
-            // Assigning the value past at the creation of a new Battery object
             columnBattery = _columnBattery;
             floorAmount = _floorAmount;
             basementAmount = _basementAmount;
@@ -64,7 +64,8 @@ namespace Elevator_Controller_CSharp
                 {
                     if (_floor >= column.minRange && _floor <= column.maxRange) // At every iteration check if the current floor of the user is in the range of that column "minRange maxRange"
                     {
-                        column.request(_floor, _stop, _direction); // when the above "if statement" is true call the method of the column to find the best elevator an adding the current floor and the requested floor of the user using the current floor of the user, the requested floor and the direction of the request
+                        Console.WriteLine("The column {0} is selected", column.ID);
+                        column.initRequest(_floor, _stop, _direction); // when the above "if statement" is true call the method of the column to find the best elevator an adding the current floor and the requested floor of the user using the current floor of the user, the requested floor and the direction of the request
                     }
                 }
 
@@ -72,7 +73,8 @@ namespace Elevator_Controller_CSharp
                 {
                     if (_stop >= column.minRange && _stop <= column.maxRange)
                     {
-                        column.request(_floor, _stop, _direction);
+                        Console.WriteLine("The column {0} is selected", column.ID);
+                        column.initRequest(_floor, _stop, _direction);
                     }
                 }
             }

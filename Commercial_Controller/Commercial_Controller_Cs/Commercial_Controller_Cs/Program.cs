@@ -3,12 +3,11 @@ using System.Collections.Generic;
 
 namespace Elevator_Controller_CSharp
 {
-    class Programa
+    class Program
     {
         static void Main(string[] args)
         {
-            codeboxx(3);
-
+            codeboxx(1);
 
             void codeboxx(int n)
             {

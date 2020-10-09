@@ -19,7 +19,6 @@ namespace Elevator_Controller_CSharp
         public string door = "closed"; // the state of the elevator door set to closed at creation
         public string status = "IDLE"; // the status of the elevator set to IDLE at creation ! IDLE MOVING MAINTENANCE
 
-        // the constructor for the elevator
         public Elevator(int _id, int _floorAmount, int _basementAmount, int _minRange)
         {
             ID = _id; // set the id of the elevator to the iteration
@@ -29,17 +28,7 @@ namespace Elevator_Controller_CSharp
             previousFloor = currentFloor; // set the previous floor to the current floor
         }
 
-        // return 0 if the number provided is in one of the list else return the number provided
-        public int allCheck(int num)
-        {
-            if (checkIn(num))
-            {
-                num = 0;
-            }
-            return num;
-        }
-
-        // removing all the element 0 from all the lists
+        // All0Remove will delete all items that are equal to zero in the elevator stop lists
         public void all0Remove()
         {
             stopList = remove0fromList(stopList);
@@ -47,7 +36,7 @@ namespace Elevator_Controller_CSharp
             downBuffer = remove0fromList(downBuffer);
         }
 
-        // method used for removing all element (int) 0 in a given list
+        // Remove0fromList will used for removing all element that are equal to zero in a given list
         public List<int> remove0fromList(List<int> _nb)
         {
             List<int> awaitList = new List<int>(); // set a new empty list to be used to make the new list whit out the zeros'
@@ -63,7 +52,17 @@ namespace Elevator_Controller_CSharp
             return awaitList; // return the new list / the list with the elements zero removed
         }
 
-        // this method check if there is a given element in some list
+        // allCheck will return the value zero if the number provided is in one of the list else return the number provided
+        public int allCheck(int num)
+        {
+            if (checkIn(num))
+            {
+                num = 0;
+            }
+            return num;
+        }
+
+        // CheckIn will return the value zero if the provided value is in one of the the elevator stop lists else it will return the provided value
         public bool checkIn(int n)
         {
             bool inList = false; // creating a new variable of type bool and set its value to false
@@ -111,7 +110,7 @@ namespace Elevator_Controller_CSharp
             return n; // return the number
         }
 
-        // method to change and print the door state of the elevator
+        // DoorState will change the state of the doors to open then close and also call the printing of the state
         public void doorState()
         {
             Console.WriteLine("The Elevator {0} has arrived at Floor {1}", ID, currentFloor);
@@ -123,7 +122,7 @@ namespace Elevator_Controller_CSharp
             Console.WriteLine("The door are {0}\n", door);
         }
 
-        // this method sort the list based on the current direction of the elevator
+        // ListSort will sort the stopList of the elevator based on the current direction of the elevator
         public void listSort()
         {
             if (currentDirection == "down") { stopList.Sort((x, y) => y.CompareTo(x)); }
@@ -132,20 +131,14 @@ namespace Elevator_Controller_CSharp
         }
 
 
-        /// <summary>
-        /// This method is used to give the elevator some point | this method is only used if the request was made from anywhere in the building apart from the ground floor
-        /// It will first set a variable for the difference between the current floor of the elevator and the "_floor"
-        /// It will check if the elevator is IDLE or not and if not it is gonna set a new variable for the difference between the last index of the list of request and the "_floor"
-        /// The less point the better!
-        /// If elevator is going in the same direction and the "_floor" is in the path of the elevator / set point with the length of the stop list + the differance floor
-        /// if IDLE / set points to min range + the differance floor
-        /// if same direction not in the path / set point to max range + differance last stop + length of stop list
-        /// if not same direction / set point to max range * 2 + differance last stop + length of stop list
-        /// </summary>
-        /// <param name="_floor">The floor at which the request was made</param>
-        /// <param name="_direction">The direction of the request</param>
-        /// <param name="_maxRange">The maximum floor served by the column</param>
-        /// <param name="_minRange">The minimum floor served by the column</param>
+        // PointsUpdateFloor will give the elevator some points | this method is only used if the request was made from anywhere in the building apart from the ground floor.
+        // The less point the better!
+        // It will first set a variable for the difference between the current floor of the elevator and the "_floor".
+        // It will check if the elevator is IDLE or not and if not it is gonna set a new variable for the difference between the last index of the list of request and the "_floor".
+        // If elevator is going in the same direction and the "_floor" is in the path of the elevator / set point with the length of the stop list + the difference floor.
+        // if IDLE / set points to min range + the difference floor.
+        // if same direction not in the path / set point to max range + difference last stop + length of stop list.
+        // if not same direction / set point to max range * 2 + difference last stop + length of stop list.
         public void pointsUpdateFloor(int _floor, string _direction, int _maxRange, int _minRange)
         {
             int differenceLastStop = 0;
@@ -191,23 +184,17 @@ namespace Elevator_Controller_CSharp
                 points = positive(_maxRange) * 2 + differenceLastStop + stopList.Count;
             }
 
-            Console.WriteLine("{0}, {1}", ID, points);
+            Console.WriteLine("Elevator {0} has {1}pts", ID, points);
         }
 
-        /// <summary>
-        /// This method is used to give the elevator some point | this method is only used if the request was made from the ground floor
-        /// It will first set a variable for the difference between the current floor of the elevator and the "_floor"
-        /// It will check if the elevator is IDLE or not and if not it is gonna set a new variable for the difference between the last index of the list of request and the "_floor"
-        /// The less point the better!
-        /// If elevator is not going in the same direction as the user direction / set point with the differance floor + the difference last stop
-        /// If IDLE / set points to min range + the differance floor + 1
-        /// If Elevator is in the same direction as the user direction / set point to max range * 2 + differance last stop + length of stop list
-        /// If the current floor of the elevator is equal to the "_floor" / set point to the length of stop list
-        /// </summary>
-        /// <param name="_floor">The floor at which the request was made</param>
-        /// <param name="_direction">The direction of the request</param>
-        /// <param name="_maxRange">The maximum floor served by the column</param>
-        /// <param name="_minRange">The minimum floor served by the column</param>
+        // PointsUpdateLobby will give the elevator some point | this method is only used if the request was made from the ground floor.
+        // The less point the better!
+        // it will first set a variable for the difference between the current floor of the elevator and the "_floor".
+        // it will check if the elevator is IDLE or not and if not it is gonna set a new variable for the difference between the last index of the list of request and the "_floor".
+        // if elevator is not going in the same direction as the user direction / set point with the difference floor + the difference last stop.
+        // if IDLE / set points to min range + the difference floor + 1.
+        // if Elevator is in the same direction as the user direction / set point to max range * 2 + difference last stop + length of stop list.
+        // if the current floor of the elevator is equal to the "_floor" / set point to the length of stop list.
         public void pointsUpdateLobby(int _floor, string _direction, int _maxRange, int _minRange)
         {
             int differenceLastStop = 0;
@@ -247,17 +234,11 @@ namespace Elevator_Controller_CSharp
                 points = stopList.Count;
             }
 
-            Console.WriteLine("{0}, {1}", ID, points);
+            Console.WriteLine("Elevator {0} has {1}pts", ID, points);
         }
 
-        /// <summary>
-        /// To long to describe and I'm tired of writing comments
-        /// but the big idea here is to add both the stop of the user and the current floor of the user to the good stop list of the elevator "stopList, upbuffer, downBuffer"
-        /// </summary>
-        /// <param name="_floor"></param>
-        /// <param name="_stop"></param>
-        /// <param name="_direction"></param>
-
+        #region ADDSTOPLOBBY
+        // AddStopLobby | the big idea here is to add both the stop of the user and the current floor of the user to the good stop list of the elevator "stopList, upBuffer, downBuffer""
         public void addStopLobby(int _floor, int _stop, string _direction)
         {
             int floor = allCheck(_floor);
@@ -326,7 +307,10 @@ namespace Elevator_Controller_CSharp
                 }
             }
         }
+        #endregion ADDSTOPLOBBY
 
+        #region ADDSTOPFLOOR
+        // AddStopFloor | the big idea here is also to add both the stop of the user and the current floor of the user to the good stop list of the elevator "stopList, upBuffer, downBuffer"
         public void addStopFloor(int _floor, int _stop, string _direction)
         {
             int floor = allCheck(_floor);
@@ -383,8 +367,9 @@ namespace Elevator_Controller_CSharp
                 }
             }
         }
+        #endregion ADDSTOPFLOOR
 
-        // method used for updating the list of stop with a buffer based on the previous direction and the length of the "up and down buffer"
+        // stopSwitch will replace the stopList of the elevator with one of the buffer lists
         public void stopSwitch()
         {
             if (upBuffer.Count != 0 && downBuffer.Count != 0)
@@ -426,7 +411,7 @@ namespace Elevator_Controller_CSharp
             }
         }
 
-        // method used for moving the elevator and calling the oppening and closing of the doors when arrived at destination
+        // Run will move the elevator based on its currentFloor and the next stop in the stopList
         public void run()
         {
             if (currentDirection != previousDirection)
@@ -455,6 +440,8 @@ namespace Elevator_Controller_CSharp
 
                 if (currentFloor == stopList[0] && previousFloor != currentFloor)
                 {
+                    Console.WriteLine("The elevator {0}, is at floor {1} and going to floor {2}", ID, previousFloor, stopList[0]);
+
                     doorState();
                     previousFloor = stopList[0];
                     stopList.RemoveAt(0);
