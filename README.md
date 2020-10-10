@@ -4,12 +4,17 @@ Hi, So now that we are in Odyssey what is there to do ? **WEEK 3,4  - ELEVATORS 
 ## Language
 So trying to figure the basics' of Ruby and Python was pretty simple when you have a good base in JavaScript
 
+ - [Go](https://golang.org/)
+ - [C#](https://docs.microsoft.com/en-us/learn/paths/csharp-first-steps/)
  - [JavaScript](https://www.javascript.com/)
  - [Ruby](https://www.ruby-lang.org/)
  - [Python](https://www.python.org/)
  
 # [Video](https://youtu.be/VQ67JKKJKUE/)
-![enter image description here](https://i.gyazo.com/f17886b81ee51bfd286436b16b4f0d27.gif)
+![PRINTING THE PROGRAM](https://i.gyazo.com/c2cb644a8f3683df7d039b70cec7ca30.gif)
+
+# New Addition "THE SO CALLED PRINTER"
+take a good look at that baby
 
 ## A brief description
 
