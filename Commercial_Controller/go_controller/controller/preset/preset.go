@@ -9,7 +9,7 @@ import (
 // CodeBoxx ...
 func CodeBoxx(n int) {
 	battery := &battery.Battery{}
-	battery.StartBattery(1, 4, 60, 6, 5)
+	battery.StartBattery(1, 40, 60, 6, 5)
 	board := &board.Board{}
 
 	// ||=========> BASEMENT COLUMN #1 <=========||

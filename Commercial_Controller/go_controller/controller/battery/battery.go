@@ -83,7 +83,7 @@ func (b *Battery) calcPrevMax(i int) int {
 	return previousMax
 }
 
-// calcColumnID will return the the id of the column at its creation -- A - Z , AA - ZZ , AA - ZZ , ...
+// calcColumnID will return the the id of the column at its creation -- A - Z , AA - ZZ , AAA - ZZZ , ...
 func (b *Battery) calcColumnID(i int, t int) (string, int) {
 	if i > 25 {
 		iInt := i % 26
