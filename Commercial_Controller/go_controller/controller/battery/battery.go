@@ -3,7 +3,6 @@ package battery
 import (
 	"go_controller/controller"
 	"go_controller/controller/battery/column"
-	"strconv"
 )
 
 // Battery ...
@@ -84,15 +83,18 @@ func (b *Battery) calcPrevMax(i int) int {
 	return previousMax
 }
 
-// calcColumnID will return the the id of the column at its creation -- A - Z , 1A - 1Z , 2A - 2Z , ...
+// calcColumnID will return the the id of the column at its creation -- A - Z , AA - ZZ , AA - ZZ , ...
 func (b *Battery) calcColumnID(i int, t int) (string, int) {
 	if i > 25 {
 		iInt := i % 26
 		if iInt == 0 {
 			t++
 		}
-		bString := strconv.Itoa(t)
-		return bString + b.Letters[i%26], t
+		var bString string = b.Letters[i%26]
+		for j := 0; j < t; j++ {
+			bString += b.Letters[i%26]
+		}
+		return bString, t
 	}
 
 	return b.Letters[i], t

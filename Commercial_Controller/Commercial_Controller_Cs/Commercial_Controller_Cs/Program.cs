@@ -7,7 +7,7 @@ namespace Elevator_Controller_CSharp
     {
         static void Main(string[] args)
         {
-            codeboxx(1);
+            codeboxx(4);
 
             void codeboxx(int n)
             {

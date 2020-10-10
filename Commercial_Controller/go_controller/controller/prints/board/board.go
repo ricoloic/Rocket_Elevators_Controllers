@@ -76,9 +76,9 @@ func (c *ColumnPrint) intiColumnPrint(i int, bat *battery.Battery) {
 		elev := &ElevatorPrint{}
 		elev.intiElevatorPrint(i, j, bat)
 		c.ElevList = append(c.ElevList, *elev)
-		if j < len(bat.ColumnList[i].ElevatorList)-1 {
-			prints.LineLine(1)
-		}
+		//if j < len(bat.ColumnList[i].ElevatorList)-1 {
+		//	prints.LineLine(1)
+		//}
 	}
 }
 

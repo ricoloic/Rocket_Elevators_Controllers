@@ -96,9 +96,9 @@ func (e *Elevator) CheckIn(n int) bool {
 func (e *Elevator) DoorState() {
 	prints.CreateArrival(e.CurrentFloor)
 
-	prints.DoorOpen("1")
+	prints.DoorOpen("1", "_")
 	e.door = "Open"
-	prints.DoorClose("1")
+	prints.DoorClose("1", "_")
 	e.door = "Closed"
 }
 
